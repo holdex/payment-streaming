@@ -45,7 +45,7 @@ contract OpenStream is ReentrancyGuard, IOpenStream {
     }
 
     ///@dev payee can claim tokens which is proportional to elapsed time (exactly seconds).`
-    function claim() external {
+    function claim() external nonReentrant {
         uint256 claimedAt = block.timestamp;
         require(payee == msg.sender, "OpenStream: Only registered payee can claim tokens");
 
@@ -53,8 +53,7 @@ contract OpenStream is ReentrancyGuard, IOpenStream {
         uint256 redeemedAmount = calculate(claimedAt);
         require(balance >= redeemedAmount, "OpenStream: Not enough balance");
 
-        (bool sent, ) = payable(payee).call{value: redeemedAmount}("");
-        require(sent, "OpenStream: tokens claimed successfully");
+        IERC20(token).safeTransferFrom(address(this), msg.sender, redeemedAmount);
         lastClaimedAt = claimedAt;
 
         emit TokensClaimed(redeemedAmount);
