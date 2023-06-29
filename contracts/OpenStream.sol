@@ -5,8 +5,11 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../interfaces/IOpenStream.sol";
 
 contract OpenStream is ReentrancyGuard, IOpenStream {
+    ///@dev payee address
     address payee;
+    ///@dev token address; USDC or USDT
     address token;
+    ///@dev monthly rate for payee
     uint256 rate;
 
     constructor(
