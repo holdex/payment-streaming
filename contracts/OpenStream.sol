@@ -55,7 +55,7 @@ contract OpenStream is ReentrancyGuard, IOpenStream {
         uint256 balance = getTokenBanance();
         uint256 claimableAmount = calculate(claimedAt);
         uint256 protocolFee = claimableAmount / 10;
-        require(balance >= claimableAmount, "OpenStream: Not enough balance");
+        require(balance >= claimableAmount + protocolFee, "OpenStream: Not enough balance");
 
         /// @dev send claimable tokens to payee
         IERC20(token).safeTransferFrom(address(this), msg.sender, claimableAmount);
