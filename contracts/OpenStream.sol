@@ -43,11 +43,13 @@ contract OpenStream is ReentrancyGuard, IOpenStream {
         admin = msg.sender;
     }
 
+    ///@dev check if the caller is payee
     modifier onlyPayee {
         require(payee == msg.sender, "OpenStream: Only registered payee can claim tokens");
         _;
     }
 
+    ///@dev check if the stream is terminated or not
     modifier notTerminated {
         require(
             terminatedAt == 0 || terminatedAt != 0 && block.timestamp <= terminatedAt + terminationPeriod,
