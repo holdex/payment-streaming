@@ -13,6 +13,8 @@ contract OpenStream is ReentrancyGuard, IOpenStream {
 
     ///@dev admin address
     address public admin;
+    ///@dev payer address
+    address public payer;
     ///@dev payee address
     address public payee;
     ///@dev token address; USDC or USDT
@@ -29,11 +31,13 @@ contract OpenStream is ReentrancyGuard, IOpenStream {
     uint256 public terminatedAt;
 
     constructor(
+        address _payer,
         address _payee,
         address _token,
         uint256 _rate,
         uint256 _terminationPeriod
     ) ReentrancyGuard() {
+        payer = _payer;
         payee = _payee;
         token = _token;
         rate = _rate;
@@ -45,7 +49,13 @@ contract OpenStream is ReentrancyGuard, IOpenStream {
 
     ///@dev check if the caller is payee
     modifier onlyPayee {
-        require(payee == msg.sender, "OpenStream: Only registered payee can claim tokens");
+        require(payee == msg.sender, "OpenStream: Only payee");
+        _;
+    }
+
+    ///@dev check if the caller is payer
+    modifier onlyPayer {
+        require(payer == msg.sender, "OpenStream: Only payer");
         _;
     }
 
@@ -87,7 +97,8 @@ contract OpenStream is ReentrancyGuard, IOpenStream {
         emit TokensClaimed(claimableAmount);
     }
 
-    function terminate() external {
+    ///@dev terminate the stream instance
+    function terminate() external onlyPayer {
         require(terminatedAt == 0, "OpenStream: the stream is already terminated or in termination period");
         terminatedAt = block.timestamp;
         emit StreamTerminated();

@@ -34,6 +34,7 @@ contract StreamManager is IStreamManager {
 
         /// @dev create a new open stream instance
         OpenStream openStreamInstance = new OpenStream(
+            msg.sender,
             _payee,
             _token,
             _rate,
