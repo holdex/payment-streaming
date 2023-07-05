@@ -36,7 +36,6 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     error InvalidAddress();
     error InvalidValue();
     error CliffPeriodIsNotEnded();
-    error NotPayee();
     error NotPayer();
     error UnClaimable();
     error CanNotClaimAnyMore();
