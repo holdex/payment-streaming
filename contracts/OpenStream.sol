@@ -103,6 +103,12 @@ contract OpenStream is ReentrancyGuard, IOpenStream {
         isClaimable = _isClaimable;
     }
 
+    ///@dev it setting a new rate for this contract(instance open stream).
+    /// Can call only `admin` or `payer`.
+    function setNewRate(uint256 _rate) public {
+        if (msg.sender == admin || msg.sender == payer) rate = _rate;
+    }
+
     ///@dev it calculates redeemed amount.
     function calculate(uint256 _claimedAt) public view returns (uint256) {
         uint256 elapsed = _claimedAt - lastClaimedAt;
