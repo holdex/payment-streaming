@@ -18,6 +18,7 @@ contract OpenStream is ReentrancyGuard, IOpenStream {
     error CanNotClaimAnyMore();
     error InsufficientBalance();
     error AlreadyTerminatedOrTerminating();
+    error OnlyPayerOrAdmin();
 
     ///@dev admin address
     address public admin;
@@ -105,8 +106,9 @@ contract OpenStream is ReentrancyGuard, IOpenStream {
 
     ///@dev it setting a new rate for this contract(instance open stream).
     /// Can call only `admin` or `payer`.
-    function setNewRate(uint256 _rate) public {
-        if (msg.sender == admin || msg.sender == payer) rate = _rate;
+    function updateRate(uint256 _rate) public {
+        if (msg.sender != admin || msg.sender != payer) revert OnlyPayerOrAdmin();
+        rate = _rate;
     }
 
     ///@dev it calculates redeemed amount.

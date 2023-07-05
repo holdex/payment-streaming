@@ -8,6 +8,8 @@ interface IOpenStream {
 
     function setClaimable(bool _isClaimable) external;
 
+    function updateRate(uint256 _rate) external;
+
     function calculate(uint256 claimedAt) external view returns (uint256);
 
     function claim() external;
