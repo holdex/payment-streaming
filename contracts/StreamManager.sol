@@ -43,7 +43,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
      * @param _payer address of the payer
      * @param _amount amount
      */
-    event RateUpdate(address _payer, uint256 _amount);
+    event RateUpdated(address _payer, uint256 _amount);
 
     error InvalidAddress();
     error InvalidValue();
@@ -223,6 +223,6 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     /// Can call only `admin` or `payer`.
     function updateRate(uint256 _rate, address _payee) public onlyAdminOrPayer {
         streamInstances[_payee].rate = _rate;
-        emit RateUpdate(msg.sender, _rate);
+        emit RateUpdated(msg.sender, _rate);
     }
 }
