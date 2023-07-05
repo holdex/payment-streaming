@@ -43,7 +43,6 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         address payer;
         address payee;
         address token;
-        uint256 amount;
         uint256 rate;
         uint256 terminationPeriod;
         uint256 cliffPeriod;
@@ -65,18 +64,6 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         _;
     }
 
-    // ///@dev check if the caller is payee
-    // modifier onlyPayee {
-    //     if (streamInstances[msg.sender]) revert NotPayee();
-    //     _;
-    // }
-
-    // ///@dev check if the caller is payer
-    // modifier onlyPayer {
-    //     if (payer != msg.sender) revert NotPayer();
-    //     _;
-    // }
-
     ///@dev check if the cliff period is ended
     modifier onlyAfterCliffPeriod {
         if (block.timestamp <= streamInstances[msg.sender].createdAt  + streamInstances[msg.sender].cliffPeriod)
@@ -84,11 +71,29 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         _;
     }
 
+    
+    ///@dev changes `isClaimable` status into `false/true`.
+    function setClaimable(address _payee, bool _isClaimable) private {
+        streamInstances[_payee].isClaimable = _isClaimable;
+    }
+
+    ///@dev it calculates claimable amount.
+    function calculate( address _payee, uint256 _claimedAt) private view returns (uint256) {
+        unchecked {
+            uint256 elapsed = _claimedAt - streamInstances[_payee].lastClaimedAt;
+            return elapsed * streamInstances[_payee].rate / 30 / 24 / 3600;    
+        }
+    }
+
+    ///@dev it gets token balance of the smart contract.
+    function getTokenBanance(address _token) private view returns (uint256) {
+        return IERC20(_token).balanceOf(address(this));
+    }
+
     /**
      * @dev Payer can create open stream instance with the params paying amounts of USDT or USDC
      * @param _payee payee address
      * @param _token token address; USDC or USDT
-     * @param _amount USDC or USDT amount
      * @param _rate monthly rate
      * @param _terminationPeriod termination period
      * @param _cliffPeriod cliff period
@@ -96,13 +101,12 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     function createOpenStream(
         address _payee,
         address _token,
-        uint256 _amount,
         uint256 _rate,
         uint256 _terminationPeriod,
         uint256 _cliffPeriod
     ) external {
         if (_payee == address(0) || _token == address(0)) revert InvalidAddress();
-        if (_rate == 0 || _amount == 0 || _terminationPeriod == 0 || _cliffPeriod == 0)
+        if (_rate == 0 || _terminationPeriod == 0 || _cliffPeriod == 0)
             revert InvalidValue();
 
         /// @dev create a new open stream instance
@@ -110,7 +114,6 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
             msg.sender,
             _payee,
             _token,
-            _amount,
             _rate,
             _terminationPeriod,
             _cliffPeriod,
@@ -128,6 +131,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
      * @param _payee payee address
      */
     function cancelOpenStream(address _payee) external {
+        if (streamInstances[_payee].payer == msg.sender) revert NotPayer();
         if (_payee != address(0)) revert InvalidAddress();
 
         /// @dev change `isClaimable` in OpenStream contract to `false` in order to cancel a stream
@@ -136,26 +140,9 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         emit CancelStream(msg.sender, _payee);
     }
 
-    ///@dev changes `isClaimable` status into `false/true`.
-    function setClaimable(address _payee, bool _isClaimable) public {
-        streamInstances[_payee].isClaimable = _isClaimable;
-    }
-
-    ///@dev it calculates redeemed amount.
-    function calculate( address _payee, uint256 _claimedAt) public view returns (uint256) {
-        uint256 elapsed = _claimedAt - streamInstances[_payee].lastClaimedAt;
-        return elapsed * streamInstances[_payee].rate / 30 / 24 / 3600;
-    }
-
-    ///@dev it gets token balance of the smart contract.
-    function getTokenBanance(address _token) public view returns (uint256) {
-        return IERC20(_token).balanceOf(address(this));
-    }
-
     ///@dev payee can claim tokens which is proportional to elapsed time (exactly seconds).
     function claim()
         onlyClaimable
-        // onlyPayee
         onlyAfterCliffPeriod
         nonReentrant
         external
@@ -183,13 +170,14 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         IERC20(token).safeTransferFrom(address(this), msg.sender, claimableAmount);
         /// @dev send 10% commission to manager contract
         IERC20(token).safeTransferFrom(address(this), admin, protocolFee);
-        lastClaimedAt = claimedAt;
+        streamInstances[msg.sender].lastClaimedAt = claimedAt;
 
         emit TokensClaimed(msg.sender, claimableAmount);
     }
 
     ///@dev terminate the stream instance
     function terminate(address _payee) external {
+        if (streamInstances[_payee].payer == msg.sender) revert NotPayer();
         if (streamInstances[_payee].terminatedAt != 0) revert AlreadyTerminatedOrTerminating();
         streamInstances[_payee].terminatedAt = block.timestamp;
         emit StreamTerminated(_payee);
