@@ -35,9 +35,9 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     /**
      * @dev Deposit tokens
      * @param _token token address
-     * @param _amount  amount
+     * @param _amount amount
      */
-    event TokensDeposted(address _token, uint256 _amount);
+    event TokensDeposited(address _token, uint256 _amount);
 
     error InvalidAddress();
     error InvalidValue();
@@ -215,6 +215,6 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
 
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
 
-        emit TokensDeposted(_token, _amount);
+        emit TokensDeposited(_token, _amount);
     }
 }
