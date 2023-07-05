@@ -248,8 +248,8 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
 
     ///@dev it setting a new rate for this contract(instance open stream).
     /// Can call only `admin` or `payer`.
-    function updateRate(uint256 _rate) public onlyAdminOrPayer {
-        rate = _rate;
+    function updateRate(uint256 _rate, address _payee) public onlyAdminOrPayer {
+        streamInstances[_payee].rate = _rate;
         emit RateUpdate(msg.sender, _rate);
     }
 }
