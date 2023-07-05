@@ -43,7 +43,6 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     error AlreadyTerminatedOrTerminating();
 
     struct OpenStream {
-        address payer;
         address payee;
         address token;
         uint256 rate;
@@ -57,11 +56,20 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
 
     ///@dev admin address
     address public admin;
+    ///@dev payer address
+    address public payer;
     /// @dev payee's address => instance
     mapping(address => OpenStream) public streamInstances;
 
-    constructor() {
+    constructor(address _payer) {
+        payer = _payer;
         admin = msg.sender;
+    }
+
+    ///@dev check if the caller is payer
+    modifier onlyPayer {
+        if (payer != msg.sender) revert NotPayer();
+        _;
     }
 
     ///@dev check if the payee is claimable
@@ -116,7 +124,6 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
 
         /// @dev create a new open stream instance
         streamInstances[_payee] = OpenStream(
-            msg.sender,      // payer
             _payee,
             _token,
             _rate,
@@ -135,8 +142,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
      * @dev Payer can cancel open stream instance
      * @param _payee payee address
      */
-    function cancelOpenStream(address _payee) external {
-        if (streamInstances[_payee].payer == msg.sender) revert NotPayer();
+    function cancelOpenStream(address _payee) external onlyPayer {
         if (_payee != address(0)) revert InvalidAddress();
 
         /// @dev change `isClaimable` in OpenStream contract to `false` in order to cancel a stream
@@ -181,9 +187,8 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     }
 
     ///@dev terminate the stream instance
-    function terminate(address _payee) external {
+    function terminate(address _payee) external onlyPayer {
         uint256 terminatedAt = block.timestamp;
-        if (streamInstances[_payee].payer == msg.sender) revert NotPayer();
         if (streamInstances[_payee].terminatedAt != 0) revert AlreadyTerminatedOrTerminating();
         streamInstances[_payee].terminatedAt = terminatedAt;
         
