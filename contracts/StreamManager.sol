@@ -14,14 +14,23 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
      * @param _payer payer address
      * @param _payee payee address
      */
-    event OpenStreamCreated(address _payer, address _payee);
+    event StreamCreated(address _payer, address _payee);
     /**
      * @dev Cancel open stream event
      * @param _payer payer address
      * @param _payee payee address
      */
-    event CancelStream(address _payer, address _payee);
+    event StreamCancelled(address _payer, address _payee);
+    /**
+     * @dev Claim tokens
+     * @param _payee payee address
+     * @param _amount claimable amount
+     */
     event TokensClaimed(address _payee, uint256 _amount);
+    /**
+     * @dev Terminated stream
+     * @param _payee payee address
+     */
     event StreamTerminated(address _payee);
 
     error InvalidAddress();
@@ -33,11 +42,6 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     error CanNotClaimAnyMore();
     error InsufficientBalance();
     error AlreadyTerminatedOrTerminating();
-
-    ///@dev admin address
-    address public admin;
-    /// @dev Mapping for addresses of streams instance 
-    mapping(address => address) public streams;
 
     struct OpenStream {
         address payer;
@@ -52,6 +56,8 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         bool isClaimable;
     }
 
+    ///@dev admin address
+    address public admin;
     /// @dev payee's address => instance
     mapping(address => OpenStream) public streamInstances;
 
@@ -59,6 +65,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         admin = msg.sender;
     }
 
+    ///@dev check if the payee is claimable
     modifier onlyClaimable {
         if (!streamInstances[msg.sender].isClaimable) revert UnClaimable();
         _;
@@ -70,7 +77,6 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
             revert CliffPeriodIsNotEnded();
         _;
     }
-
     
     ///@dev changes `isClaimable` status into `false/true`.
     function setClaimable(address _payee, bool _isClaimable) private {
@@ -111,7 +117,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
 
         /// @dev create a new open stream instance
         streamInstances[_payee] = OpenStream(
-            msg.sender,
+            msg.sender,      // payer
             _payee,
             _token,
             _rate,
@@ -123,7 +129,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
             true             // isClaimable
         );
 
-        emit OpenStreamCreated(msg.sender, _payee);
+        emit StreamCreated(msg.sender, _payee);
     }
 
     /**
@@ -137,7 +143,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         /// @dev change `isClaimable` in OpenStream contract to `false` in order to cancel a stream
         setClaimable(_payee, false);
 
-        emit CancelStream(msg.sender, _payee);
+        emit StreamCancelled(msg.sender, _payee);
     }
 
     ///@dev payee can claim tokens which is proportional to elapsed time (exactly seconds).
@@ -177,9 +183,11 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
 
     ///@dev terminate the stream instance
     function terminate(address _payee) external {
+        uint256 terminatedAt = block.timestamp;
         if (streamInstances[_payee].payer == msg.sender) revert NotPayer();
         if (streamInstances[_payee].terminatedAt != 0) revert AlreadyTerminatedOrTerminating();
-        streamInstances[_payee].terminatedAt = block.timestamp;
+        streamInstances[_payee].terminatedAt = terminatedAt;
+        
         emit StreamTerminated(_payee);
     }
 }
