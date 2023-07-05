@@ -39,6 +39,20 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
      */
     event TokensDeposited(address _token, uint256 _amount);
 
+    /**
+     * @dev Accumulation amount
+     * @param _payee address of the payee
+     * @param _amount amount
+     */
+    event AccumulationAmount(address _payee, uint256 _amount);
+
+    /**
+     * @dev Update of the rate
+     * @param _payer address of the payer
+     * @param _amount amount
+     */
+    event RateUpdate(address _payer, uint256 _amount)
+
     error InvalidAddress();
     error InvalidValue();
     error CliffPeriodIsNotEnded();
@@ -47,6 +61,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     error CanNotClaimAnyMore();
     error InsufficientBalance();
     error AlreadyTerminatedOrTerminating();
+    error OnlyPayerOrAdmin();
 
     struct OpenStream {
         address payee;
@@ -88,6 +103,11 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     modifier onlyAfterCliffPeriod {
         if (block.timestamp <= streamInstances[msg.sender].createdAt  + streamInstances[msg.sender].cliffPeriod)
             revert CliffPeriodIsNotEnded();
+        _;
+    }
+
+    modifier onlyAdminOrPayer{
+        if (msg.sender != admin || msg.sender != payer) revert OnlyPayerOrAdmin();
         _;
     }
     
@@ -216,5 +236,20 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
 
         emit TokensDeposited(_token, _amount);
+    }
+
+    ///@dev shows accumulated amount in USDT or USDC
+    function accumulation() external onlyPayee view returns(uint256) {
+        uint256 amount = calculate(block.timestamp);
+        //@dev return the amount
+        return amount;
+        AccumulationAmount(msg.sender, amount);
+    }
+
+    ///@dev it setting a new rate for this contract(instance open stream).
+    /// Can call only `admin` or `payer`.
+    function updateRate(uint256 _rate) public onlyAdminOrPayer {
+        rate = _rate;
+        emit RateUpdate(msg.sender, _rate);
     }
 }
