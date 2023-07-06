@@ -91,7 +91,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     }
 
     ///@dev it calculates claimable amount.
-    function calculate( address _payee, uint256 _claimedAt) private view returns (uint256) {
+    function calculate(address _payee, uint256 _claimedAt) private view returns (uint256) {
         unchecked {
             uint256 elapsed = _claimedAt - streamInstances[_payee].lastClaimedAt;
             return elapsed * streamInstances[_payee].rate / 30 / 24 / 3600;    
@@ -196,5 +196,12 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
 
         emit TokensDeposited(_token, _amount);
+    }
+
+    ///@dev shows accumulated amount in USDT or USDC
+    function accumulation() external onlyPayee view returns(uint256) {
+        uint256 amount = calculate(msg.sender, block.timestamp);
+        //@dev return the amount
+        return amount;
     }
 }
