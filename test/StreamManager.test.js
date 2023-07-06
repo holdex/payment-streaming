@@ -22,15 +22,18 @@ describe("StreamManager", function () {
     )
   })
 
-  it('Minting to payer', async () => {
+  it('Minting to payer succeed', async () => {
     const amount = ethers.BigNumber.from("10000000000")
 
-    await expect(this.mockUSDT.mint(
-      this.payer.address,
-      amount
-    ))
+    await expect(this.mockUSDT.mint(this.payer.address, amount))
+      .to.emit(this.mockUSDT, "Minted")
+      .withArgs(this.payer.address, amount)
     
-    expect(await this.mockUSDT.balanceOf(this.payer.address)).to.equal(amount)
+    await expect(this.mockUSDT.mint(this.payer.address, amount))
+      .to.emit(this.mockUSDT, "Minted")
+      .withArgs(this.payer.address, amount)
+
+    expect(await this.mockUSDT.balanceOf(this.payer.address)).to.equal(ethers.BigNumber.from("20000000000"))
   })
 
 });
