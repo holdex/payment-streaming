@@ -65,7 +65,7 @@ describe("StreamManager", function () {
       this.streamManager.createOpenStream(
         this.zero,
         this.mockUSDT.address,
-        1500,
+        this.rate,
         this.terminationPeriod,
         this.cliffPeriod
       )
@@ -76,7 +76,7 @@ describe("StreamManager", function () {
       this.streamManager.createOpenStream(
         this.payee1.address,
         this.zero,
-        1500,
+        this.rate,
         this.terminationPeriod,
         this.cliffPeriod
       )
@@ -101,7 +101,7 @@ describe("StreamManager", function () {
       this.streamManager.createOpenStream(
         this.payee1.address,
         this.mockUSDT.address,
-        1500,
+        this.rate,
         0,
         this.cliffPeriod
       )
@@ -112,7 +112,7 @@ describe("StreamManager", function () {
       this.streamManager.createOpenStream(
         this.payee1.address,
         this.mockUSDT.address,
-        1500,
+        this.rate,
         this.terminationPeriod,
         0
       )
@@ -171,7 +171,7 @@ describe("StreamManager", function () {
     .to.be.revertedWith('NotPayer');
   })
 
-  // Returning 0, because the current timestamp is less than the sum of the thread creation time and the "cliff" period 
+  // Returning 0, because the current timestamp is less than the sum of the stream creation time and the "cliff" period 
   it('Accumulated: timestamp not less than the sum of the stream creation time and the "cliff" period;', async () => {
     // Calling the `accumulation();`
     const accumulatedAmount = await this.streamManager.connect(this.payee1).accumulation()
@@ -251,7 +251,7 @@ describe("StreamManager", function () {
     ).to.be.revertedWith('InsufficientBalance')
   })
 
-  it('Claiming failed: payer claimed after the permination period, so can not claim any more', async () => {
+  it('Claiming failed: payee claimed after the permination period, so can not claim any more', async () => {
     // So payer deposited again.
     await this.mockUSDT.connect(this.payer).approve(this.streamManager.address, this.amount)
     await  this.streamManager.connect(this.payer).deposit(
