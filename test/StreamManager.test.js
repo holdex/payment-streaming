@@ -58,7 +58,7 @@ describe("StreamManager", function () {
     .withArgs(this.admin.address, this.payee1.address)
   })
 
-  // Expercing rever with `InvalidAddress`
+  // Expecting revert with `InvalidAddress`
   it('Creating open stream instance: `_payee` and `_token` are not set as address(0);', async () => {
     // Setting `_payee` = address(0)
     await expect(
@@ -83,7 +83,7 @@ describe("StreamManager", function () {
     ).to.be.revertedWith('InvalidAddress');
   })
 
-  // Expercing rever with `InvalidValue`
+  // Expecting revert with `InvalidValue`
   it('Creating an open stream instance: `_rate`, `_terminationPeriod`, `_cliffPeriod` not set how 0;', async () => {
     // Setting `_rate` = 0
     await expect(
@@ -138,7 +138,7 @@ describe("StreamManager", function () {
     expect(await this.mockUSDT.balanceOf(this.streamManager.address)).to.equal(this.amount)
   })
 
-  // Expecing rever with `InvalidAddress`
+  // Expecting revert with `InvalidAddress`
   it('Deposit: `_token` not set how address(0);', async () => {
     // Setting `_token` = address(0)
     await expect(
@@ -149,7 +149,7 @@ describe("StreamManager", function () {
     .to.be.revertedWith('InvalidAddress');
   })
 
-  // Expecing rever with `InvalidValue`
+  // Expecting revert with `InvalidValue`
   it('Deposit: `_amount` not set how 0;', async () => {
     // Setting `_amount` = 0
     await expect(
@@ -160,7 +160,7 @@ describe("StreamManager", function () {
     .to.be.revertedWith('InvalidValue');
   })
 
-  // Expecing rever with `NotPayer`
+  // Expecting revert with `NotPayer`
   it('Deposit: only payer can call this function;', async () => {
     // Calling from other address
     await expect(
@@ -194,7 +194,7 @@ describe("StreamManager", function () {
     expect(accumulatedAmount).to.equal(expectedAmount)
   });
 
-  // Expecing rever with `NotPayee`
+  // Expecting revert with `NotPayee`
   it('Accumulated: only payee can call this function;', async () => {
     // Calling from other address
     await expect(
@@ -217,14 +217,14 @@ describe("StreamManager", function () {
     .withArgs(this.payee1.address, expectedAmount)
   })
 
-  // Expect revert with NotPayer
+  // Expecting revert with NotPayer
   it('Terminating failed: only payer can terminate', async () => {
     await expect(
       this.streamManager.connect(this.payee2).terminate(this.payee1.address))
       .to.be.revertedWith('NotPayer')
   })
   
-  // Expect success
+  // Expecting success
   it('Terminating succeeding', async () => {
     await expect(
       this.streamManager.connect(this.payer).terminate(this.payee1.address))
@@ -232,7 +232,7 @@ describe("StreamManager", function () {
       .withArgs(this.payee1.address)
     })
     
-  // Expect revert with AlreadyTerminatedOrTerminating
+  // Expecting revert with AlreadyTerminatedOrTerminating
   it('Terminating failed: stream is already terminated', async () => {
     await expect(
       this.streamManager.connect(this.payer).terminate(this.payee1.address))
