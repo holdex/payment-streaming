@@ -171,8 +171,8 @@ describe("StreamManager", function () {
   })
 
   // Tests for `accumulation();`
-  //
-  it.only('Return accumulated amount;', async () => {
+  // Amount is accumulated
+  it('Return accumulated amount;', async () => {
     // Create the open stream
     await this.streamManager.createOpenStream(
       this.payee1.address,
@@ -188,14 +188,35 @@ describe("StreamManager", function () {
 
     // Calling the `accumulation();`
     const accumulatedAmount = await this.streamManager.connect(this.payee1).accumulation()
+    // Calculating expected amount
+    const expectedAmount = Math.floor(this.cliffPeriod * this.amount / 30 / 24 / 3600)
 
-    const elapsed = currentTime - this.cliffPeriod
-    const expectedAmount = Math.floor(elapsed * this.amount / 30 / 24 / 3600)
-
-    console.log('expectedAmount:', await this.streamManager.streamInstances(this.payee1.address))
-    console.log('expectedAmount:', expectedAmount)
-    console.log('accumulatedAmount:', accumulatedAmount) 
-
-    //expect(accumulatedAmount).to.equal(expectedAmount)
+    expect(accumulatedAmount).to.equal(expectedAmount)
   });
+
+  // Returning 0, because the current timestamp is less than the sum of the thread creation time and the "cliff" period 
+  it('Accumulated: timestamp not less than the sum of the stream creation time and the "cliff" period;', async () => {
+    // Create the open stream
+    await this.streamManager.createOpenStream(
+      this.payee1.address,
+      this.mockUSDT.address,
+      this.amount,
+      this.terminationPeriod,
+      this.cliffPeriod
+    );
+    
+    // Calling the `accumulation();`
+    const accumulatedAmount = await this.streamManager.connect(this.payee1).accumulation()
+
+    expect(accumulatedAmount).to.equal(0)
+  });
+
+  // Expecing rever with `NotPayee`
+  it('Deposit: only payee can call this function;', async () => {
+    // Calling from other address
+    await expect(
+      this.streamManager.connect(this.payer).accumulation()
+    )
+    .to.be.revertedWith('NotPayee');
+  })
 });
