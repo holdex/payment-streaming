@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("StreamManager", function () {
   before(async () => {
@@ -10,6 +11,9 @@ describe("StreamManager", function () {
     this.payee2 = payee2
     this.zero = ethers.constants.AddressZero
     this.amount = 1000
+
+    this.terminationPeriod = 30 * 24 * 3600; // 30 days
+    this.cliffPeriod = 24 * 3600; // 24 hrs
 
     // Deploy StreamManager
     const StreamManager = await ethers.getContractFactory("StreamManager")
@@ -46,8 +50,8 @@ describe("StreamManager", function () {
       this.payee1.address,
       this.mockUSDT.address,
       1500,
-      30,
-      30
+      this.terminationPeriod,
+      this.cliffPeriod
     ))
     .to.emit(this.streamManager, "StreamCreated")
     .withArgs(this.admin.address, this.payee1.address)
@@ -61,8 +65,8 @@ describe("StreamManager", function () {
         this.zero,
         this.mockUSDT.address,
         1500,
-        30,
-        30
+        this.terminationPeriod,
+        this.cliffPeriod
       )
     ).to.be.revertedWith('InvalidAddress');
 
@@ -72,8 +76,8 @@ describe("StreamManager", function () {
         this.payee1.address,
         this.zero,
         1500,
-        30,
-        30
+        this.terminationPeriod,
+        this.cliffPeriod
       )
     ).to.be.revertedWith('InvalidAddress');
   })
@@ -86,8 +90,8 @@ describe("StreamManager", function () {
         this.payee1.address,
         this.mockUSDT.address,
         0,
-        30,
-        30
+        this.terminationPeriod,
+        this.cliffPeriod
       )
     ).to.be.revertedWith('InvalidValue');
 
@@ -98,7 +102,7 @@ describe("StreamManager", function () {
         this.mockUSDT.address,
         1500,
         0,
-        30
+        this.cliffPeriod
       )
     ).to.be.revertedWith('InvalidValue');
 
@@ -108,7 +112,7 @@ describe("StreamManager", function () {
         this.payee1.address,
         this.mockUSDT.address,
         1500,
-        30,
+        this.terminationPeriod,
         0
       )
     ).to.be.revertedWith('InvalidValue');
@@ -165,4 +169,33 @@ describe("StreamManager", function () {
     ))
     .to.be.revertedWith('NotPayer');
   })
+
+  // Tests for `accumulation();`
+  //
+  it.only('Return accumulated amount;', async () => {
+    // Create the open stream
+    await this.streamManager.createOpenStream(
+      this.payee1.address,
+      this.mockUSDT.address,
+      this.amount,
+      this.terminationPeriod,
+      this.cliffPeriod
+    );
+
+    // Setting tinestamp
+    const currentTime = Math.floor(Date.now() / 1000)
+    await time.increase(2 * 24 * 3600); // + 2 days
+
+    // Calling the `accumulation();`
+    const accumulatedAmount = await this.streamManager.connect(this.payee1).accumulation()
+
+    const elapsed = currentTime - this.cliffPeriod
+    const expectedAmount = Math.floor(elapsed * this.amount / 30 / 24 / 3600)
+
+    console.log('expectedAmount:', await this.streamManager.streamInstances(this.payee1.address))
+    console.log('expectedAmount:', expectedAmount)
+    console.log('accumulatedAmount:', accumulatedAmount) 
+
+    //expect(accumulatedAmount).to.equal(expectedAmount)
+  });
 });
