@@ -204,14 +204,14 @@ describe("StreamManager", function () {
   })
 
   // Expect revert with NotPayer
-  it('Terminating failed: only payer can terminate', async () => {
+  it('Terminating failed: only payer can terminate;', async () => {
     await expect(
       this.streamManager.connect(this.payee2).terminate(this.payee1.address))
       .to.be.revertedWith('NotPayer')
   })
   
   // Expect success
-  it('Terminating succeeding', async () => {
+  it('Terminating succeeding;', async () => {
     await expect(
       this.streamManager.connect(this.payer).terminate(this.payee1.address))
       .to.emit(this.streamManager, 'StreamTerminated')
@@ -219,15 +219,15 @@ describe("StreamManager", function () {
     })
     
   // Expect revert with AlreadyTerminatedOrTerminating
-  it('Terminating failed: stream is already terminated', async () => {
+  it('Terminating failed: stream is already terminated;', async () => {
     await expect(
       this.streamManager.connect(this.payer).terminate(this.payee1.address))
       .to.be.revertedWith('AlreadyTerminatedOrTerminating')
     })  
 
   // Tests for `claim();`
-  // Problem: need approval for transfer? TODO: write other tests for this function
-  it('Claiming is succeed', async () => {
+  // Claiming USDT
+  it('Claiming is succeed;', async () => {
     const currentTimestamp = 2 * 24 * 3600
     const claimablePeriod = currentTimestamp - this.cliffPeriod
     const expectedAmount = Math.floor(claimablePeriod * this.rate / 30 / 24 / 3600)
@@ -238,5 +238,66 @@ describe("StreamManager", function () {
     .to.emit(this.streamManager, "TokensClaimed")
     .withArgs(this.payee1.address, expectedAmount)
   })
+
+  // Expecing rever with `NotPayee`
+  it('Claim: only payee can call this function;', async () => {
+    await expect(this.streamManager.connect(this.admin).claim()).to.be.revertedWith("NotPayee");
+  })
+
+  // Expecing rever with `CliffPeriodIsNotEnded`
+  it('Claim: cliff period is not ended;', async () => {
+    // Creating stream
+    await this.streamManager.createOpenStream(
+        this.payee1.address,
+        this.mockUSDT.address,
+        this.rate,
+        this.terminationPeriod,
+        this.cliffPeriod)
+
+    await expect(this.streamManager.connect(this.payee1).claim()
+    ).to.be.revertedWith("CliffPeriodIsNotEnded");
+  })
   
+  // Expecing rever with `InsufficientBalance`
+  it.only("Claim: insufficient balance", async () =>  {
+    // Creating stream
+    await this.streamManager.createOpenStream(
+        this.payee1.address,
+        this.mockUSDT.address,
+        this.rate,
+        this.terminationPeriod,
+        this.cliffPeriod)
+
+    await time.increase(2 * 24 * 3600); // + 2 days
+
+    await expect(this.streamManager.connect(this.payee1).claim()).to.be.revertedWith("InsufficientBalance")
+  });
+
+  // Expecing rever with `ReentrancyGuardReentrantCall`
+  /*it("claim: if reentrant call is detected;", async () => {
+    await this.streamManager.createOpenStream(
+        this.payee1.address,
+        this.mockUSDT.address,
+        this.rate,
+        this.terminationPeriod,
+        this.cliffPeriod)
+    const currentTimestamp = 2 * 24 * 3600
+    await time.increase(currentTimestamp); // + 2 days
+
+    // Call the claim function inside another claim function to make a recursive call
+    async function recursiveClaim() {
+      await this.streamManager.connect(this.payee1).claim();
+    }
+
+    await expect(recursiveClaim()).to.be.revertedWith("ReentrancyGuardReentrantCall");
+  });*/
+
+  /** TODO:
+   *  1) fix: Claim: if reentrant call is detected;
+   *  2) fix: Claim: insufficient balance // working when .only
+   *  2) writing the test for `else` in `claim();`
+   *  3) writing the test for `revert CanNotClaimAnyMore();`
+   *  4) writing the test for `nonReentrant` (modifier)   
+   */ 
+
 });
