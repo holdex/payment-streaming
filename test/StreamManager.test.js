@@ -53,11 +53,11 @@ describe("StreamManager", function () {
     .withArgs(this.admin.address, this.payee1.address)
   })
 
-  // Expecing rever with `InvalidAddress`
-  it('Creating an open stream instance: `_payee` and `_token` not set how address(0);', async () => {
+  // Expercing rever with `InvalidAddress`
+  it('Creating open stream instance: `_payee` and `_token` are not set as address(0);', async () => {
     // Setting `_payee` = address(0)
     await expect(
-    this.streamManager.createOpenStream(
+      this.streamManager.createOpenStream(
         this.zero,
         this.mockUSDT.address,
         1500,
@@ -68,7 +68,7 @@ describe("StreamManager", function () {
 
     // Setting `_token` = address(0)
     await expect(
-    this.streamManager.createOpenStream(
+      this.streamManager.createOpenStream(
         this.payee1.address,
         this.zero,
         1500,
@@ -78,11 +78,11 @@ describe("StreamManager", function () {
     ).to.be.revertedWith('InvalidAddress');
   })
 
-  // Expecing rever with `InvalidValue`
+  // Expercing rever with `InvalidValue`
   it('Creating an open stream instance: `_rate`, `_terminationPeriod`, `_cliffPeriod` not set how 0;', async () => {
     // Setting `_rate` = 0
     await expect(
-    this.streamManager.createOpenStream(
+      this.streamManager.createOpenStream(
         this.payee1.address,
         this.mockUSDT.address,
         0,
@@ -93,7 +93,7 @@ describe("StreamManager", function () {
 
     // Setting `_terminationPeriod` = 0
     await expect(
-    this.streamManager.createOpenStream(
+      this.streamManager.createOpenStream(
         this.payee1.address,
         this.mockUSDT.address,
         1500,
@@ -104,7 +104,7 @@ describe("StreamManager", function () {
 
     // Setting `_cliffPeriod` = 0
     await expect(
-    this.streamManager.createOpenStream(
+      this.streamManager.createOpenStream(
         this.payee1.address,
         this.mockUSDT.address,
         1500,
