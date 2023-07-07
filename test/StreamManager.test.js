@@ -219,7 +219,7 @@ describe("StreamManager", function () {
     )
     .to.be.revertedWith('NotPayee');
   })
-  
+
   // Expect revert with NotPayer
   it('Terminating failed: only payer can terminate', async () => {
     await expect(
@@ -242,4 +242,47 @@ describe("StreamManager", function () {
       .to.be.revertedWith('AlreadyTerminatedOrTerminating')
     })  
 
+  // Tests for `claim();`
+  // Problem: need approval for transfer? TODO: write other tests for this function
+  it.only('Claiming is succeed', async () => {
+    // Minting tokens for payer
+    await this.mockUSDT.mint(this.payer.address, this.amount);
+
+    // Approve tokens for transfer to streamManager for deposit
+    await this.mockUSDT.connect(this.payer).approve(this.streamManager.address, this.amount);
+
+    // Deposit tokens on contract
+    await this.streamManager.connect(this.payer).deposit(this.mockUSDT.address, this.amount);
+
+    // Create the open stream
+    await this.streamManager.createOpenStream(
+      this.payee1.address,
+      this.mockUSDT.address,
+      this.amount,
+      this.terminationPeriod,
+      this.cliffPeriod
+    );
+    
+    await time.increase(2 * 24 * 3600); // + 2 days
+
+    //console.log(await this.mockUSDT.balanceOf(this.streamManager.address))
+    //console.log(await this.mockUSDT.balanceOf(this.payer.address))
+
+    // Call claim() function for payee1
+    await this.streamManager.connect(this.payee1).claim();
+
+    // Check the balance of payee1 after claiming
+    const payee1Balance = await this.mockUSDT.balanceOf(this.payee1.address);
+    const expectedBalance = this.amount; // Assuming the claimed amount is equal to the deposited amount
+
+    // Assert that the payee1's balance matches the expected balance
+    expect(payee1Balance).to.equal(expectedBalance);
+
+    await expect(
+      this.streamManager.connect(this.payee1).claim()
+    )
+    .to.emit(this.streamManager, "TokensClaimed")
+    .withArgs(this.payee1.address, expectedAmount)
+  })
+  
 });
