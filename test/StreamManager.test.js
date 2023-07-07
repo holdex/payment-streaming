@@ -168,7 +168,7 @@ describe("StreamManager", function () {
       this.amount
     ))
     .to.be.revertedWith('NotPayer');
-  })
+  })  
 
   // Tests for `accumulation();`
   // Amount is accumulated
@@ -212,7 +212,7 @@ describe("StreamManager", function () {
   });
 
   // Expecing rever with `NotPayee`
-  it('Deposit: only payee can call this function;', async () => {
+  it('Accumulated: only payee can call this function;', async () => {
     // Calling from other address
     await expect(
       this.streamManager.connect(this.payer).accumulation()
