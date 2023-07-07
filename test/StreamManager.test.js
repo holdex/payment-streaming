@@ -11,6 +11,7 @@ describe("StreamManager", function () {
     this.payee2 = payee2
     this.zero = ethers.constants.AddressZero
     this.amount = 1000
+    this.rate = 1500
 
     this.terminationPeriod = 30 * 24 * 3600; // 30 days
     this.cliffPeriod = 24 * 3600; // 24 hrs
@@ -49,7 +50,7 @@ describe("StreamManager", function () {
     await expect(this.streamManager.createOpenStream(
       this.payee1.address,
       this.mockUSDT.address,
-      1500,
+      this.rate,
       this.terminationPeriod,
       this.cliffPeriod
     ))
@@ -168,47 +169,29 @@ describe("StreamManager", function () {
       this.amount
     ))
     .to.be.revertedWith('NotPayer');
-  })  
-
-  // Tests for `accumulation();`
-  // Amount is accumulated
-  it('Return accumulated amount;', async () => {
-    // Create the open stream
-    await this.streamManager.createOpenStream(
-      this.payee1.address,
-      this.mockUSDT.address,
-      this.amount,
-      this.terminationPeriod,
-      this.cliffPeriod
-    );
-
-    // Setting tinestamp
-    const currentTime = Math.floor(Date.now() / 1000)
-    await time.increase(2 * 24 * 3600); // + 2 days
-
-    // Calling the `accumulation();`
-    const accumulatedAmount = await this.streamManager.connect(this.payee1).accumulation()
-    // Calculating expected amount
-    const expectedAmount = Math.floor(this.cliffPeriod * this.amount / 30 / 24 / 3600)
-
-    expect(accumulatedAmount).to.equal(expectedAmount)
-  });
+  })
 
   // Returning 0, because the current timestamp is less than the sum of the thread creation time and the "cliff" period 
   it('Accumulated: timestamp not less than the sum of the stream creation time and the "cliff" period;', async () => {
-    // Create the open stream
-    await this.streamManager.createOpenStream(
-      this.payee1.address,
-      this.mockUSDT.address,
-      this.amount,
-      this.terminationPeriod,
-      this.cliffPeriod
-    );
-    
     // Calling the `accumulation();`
     const accumulatedAmount = await this.streamManager.connect(this.payee1).accumulation()
 
     expect(accumulatedAmount).to.equal(0)
+  });
+
+  // Tests for `accumulation();`
+  // Amount is accumulated
+  it('Return accumulated amount;', async () => {
+    // Setting timestamp
+    const currentTimestamp = 2 * 24 * 3600
+    const claimablePeriod = currentTimestamp - this.cliffPeriod
+    await time.increase(currentTimestamp); // + 2 days
+
+    // Calling the `accumulation();`
+    const accumulatedAmount = await this.streamManager.connect(this.payee1).accumulation()
+    // Calculating expected amount
+    const expectedAmount = Math.floor(claimablePeriod * this.rate / 30 / 24 / 3600)
+    expect(accumulatedAmount).to.equal(expectedAmount)
   });
 
   // Expecing rever with `NotPayee`
@@ -244,39 +227,10 @@ describe("StreamManager", function () {
 
   // Tests for `claim();`
   // Problem: need approval for transfer? TODO: write other tests for this function
-  it.only('Claiming is succeed', async () => {
-    // Minting tokens for payer
-    await this.mockUSDT.mint(this.payer.address, this.amount);
-
-    // Approve tokens for transfer to streamManager for deposit
-    await this.mockUSDT.connect(this.payer).approve(this.streamManager.address, this.amount);
-
-    // Deposit tokens on contract
-    await this.streamManager.connect(this.payer).deposit(this.mockUSDT.address, this.amount);
-
-    // Create the open stream
-    await this.streamManager.createOpenStream(
-      this.payee1.address,
-      this.mockUSDT.address,
-      this.amount,
-      this.terminationPeriod,
-      this.cliffPeriod
-    );
-    
-    await time.increase(2 * 24 * 3600); // + 2 days
-
-    //console.log(await this.mockUSDT.balanceOf(this.streamManager.address))
-    //console.log(await this.mockUSDT.balanceOf(this.payer.address))
-
-    // Call claim() function for payee1
-    await this.streamManager.connect(this.payee1).claim();
-
-    // Check the balance of payee1 after claiming
-    const payee1Balance = await this.mockUSDT.balanceOf(this.payee1.address);
-    const expectedBalance = this.amount; // Assuming the claimed amount is equal to the deposited amount
-
-    // Assert that the payee1's balance matches the expected balance
-    expect(payee1Balance).to.equal(expectedBalance);
+  it('Claiming is succeed', async () => {
+    const currentTimestamp = 2 * 24 * 3600
+    const claimablePeriod = currentTimestamp - this.cliffPeriod
+    const expectedAmount = Math.floor(claimablePeriod * this.rate / 30 / 24 / 3600)
 
     await expect(
       this.streamManager.connect(this.payee1).claim()
