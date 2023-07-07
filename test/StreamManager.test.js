@@ -172,12 +172,19 @@ describe("StreamManager", function () {
       this.streamManager.connect(this.payee2).terminate(this.payee1.address))
       .to.be.revertedWith('NotPayer')
   })
-
+  
   // Expect success
   it('Terminating succeeding', async () => {
     await expect(
       this.streamManager.connect(this.payer).terminate(this.payee1.address))
       .to.emit(this.streamManager, 'StreamTerminated')
       .withArgs(this.payee1.address)
-  })
+    })
+    
+  // Expect revert with AlreadyTerminatedOrTerminating
+  it('Terminating failed: stream is already terminated', async () => {
+    await expect(
+      this.streamManager.connect(this.payer).terminate(this.payee1.address))
+      .to.be.revertedWith('AlreadyTerminatedOrTerminating')
+    })  
 });
