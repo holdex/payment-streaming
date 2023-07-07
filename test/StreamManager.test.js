@@ -165,4 +165,11 @@ describe("StreamManager", function () {
     ))
     .to.be.revertedWith('NotPayer');
   })
+
+  it('Terminating succeeding', async () => {
+    await expect(
+      this.streamManager.connect(this.payer).terminate(this.payee1.address))
+      .to.emit(this.streamManager, 'StreamTerminated')
+      .withArgs(this.payee1.address)
+  })
 });
