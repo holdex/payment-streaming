@@ -13,7 +13,7 @@ describe("StreamManager", function () {
     this.amount = 1000
     this.rate = 1500
 
-    this.terminationPeriod = 18 * 24 * 3600; // 30 days
+    this.terminationPeriod = 18 * 24 * 3600; // 18 days
     this.cliffPeriod = 24 * 3600; // 24 hrs
 
     // Deploy StreamManager
@@ -241,9 +241,8 @@ describe("StreamManager", function () {
 
   it('Claiming failed: insufficient funds', async () => {
     await time.increase(17 * 24 * 3600); // + 17 days
-    await this.streamManager.connect(this.payee1).claim()
     // claimed after 17 days from terminated point
-    console.log(await this.mockUSDT.balanceOf(this.streamManager.address))
+    await this.streamManager.connect(this.payee1).claim()
 
     // tried to claim after 2 days but insufficient funds
     await time.increase(2 * 24 * 3600); // + 2 days
