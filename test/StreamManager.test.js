@@ -13,7 +13,7 @@ describe("StreamManager", function () {
     this.amount = 1000
     this.rate = 1500
 
-    this.terminationPeriod = 30 * 24 * 3600; // 30 days
+    this.terminationPeriod = 18 * 24 * 3600; // 30 days
     this.cliffPeriod = 24 * 3600; // 24 hrs
 
     // Deploy StreamManager
@@ -203,6 +203,20 @@ describe("StreamManager", function () {
     .to.be.revertedWith('NotPayee');
   })
 
+  // Tests for `claim();`
+  // Problem: need approval for transfer? TODO: write other tests for this function
+  it('Claiming succeed', async () => {
+    const currentTimestamp = 2 * 24 * 3600
+    const claimablePeriod = currentTimestamp - this.cliffPeriod
+    const expectedAmount = Math.floor(claimablePeriod * this.rate / 30 / 24 / 3600)
+
+    await expect(
+      this.streamManager.connect(this.payee1).claim()
+    )
+    .to.emit(this.streamManager, "TokensClaimed")
+    .withArgs(this.payee1.address, expectedAmount)
+  })
+
   // Expect revert with NotPayer
   it('Terminating failed: only payer can terminate', async () => {
     await expect(
@@ -223,20 +237,34 @@ describe("StreamManager", function () {
     await expect(
       this.streamManager.connect(this.payer).terminate(this.payee1.address))
       .to.be.revertedWith('AlreadyTerminatedOrTerminating')
-    })  
+    })
 
-  // Tests for `claim();`
-  // Problem: need approval for transfer? TODO: write other tests for this function
-  it('Claiming is succeed', async () => {
-    const currentTimestamp = 2 * 24 * 3600
-    const claimablePeriod = currentTimestamp - this.cliffPeriod
-    const expectedAmount = Math.floor(claimablePeriod * this.rate / 30 / 24 / 3600)
+  it('Claiming failed: insufficient funds', async () => {
+    await time.increase(17 * 24 * 3600); // + 17 days
+    await this.streamManager.connect(this.payee1).claim()
+    // claimed after 17 days from terminated point
+    console.log(await this.mockUSDT.balanceOf(this.streamManager.address))
 
+    // tried to claim after 2 days but insufficient funds
+    await time.increase(2 * 24 * 3600); // + 2 days
     await expect(
       this.streamManager.connect(this.payee1).claim()
-    )
-    .to.emit(this.streamManager, "TokensClaimed")
-    .withArgs(this.payee1.address, expectedAmount)
+    ).to.be.revertedWith('InsufficientBalance')
   })
-  
+
+  it('Claiming failed: payer claimed after the permination period, so can not claim any more', async () => {
+    // So payer deposited again.
+    await this.mockUSDT.connect(this.payer).approve(this.streamManager.address, this.amount)
+    await  this.streamManager.connect(this.payer).deposit(
+      this.mockUSDT.address,
+      this.amount
+    )
+    // claimed again.
+    await this.streamManager.connect(this.payee1).claim()
+    // after this claim, payee1 can't claim any more becuase termination period is 18 days. but already elapsed 19 days.
+    await expect(
+      this.streamManager.connect(this.payee1).claim()
+    ).to.be.revertedWith('CanNotClaimAnyMore')
+  })
+
 });
