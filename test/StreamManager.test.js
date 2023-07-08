@@ -171,7 +171,7 @@ describe("StreamManager", function () {
     .to.be.revertedWith('NotPayer');
   })
 
-  // Returning 0, because the current timestamp is less than the sum of the thread creation time and the "cliff" period 
+  // Returning 0, because the current timestamp is less than the sum of the stream creation time and the "cliff" period 
   it('Accumulated: timestamp not less than the sum of the stream creation time and the "cliff" period;', async () => {
     // Calling the `accumulation();`
     const accumulatedAmount = await this.streamManager.connect(this.payee1).accumulation()
