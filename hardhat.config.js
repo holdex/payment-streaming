@@ -2,7 +2,28 @@
 require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
+require('dotenv').config();
 
 module.exports = {
-  solidity: "0.8.18",
+  defaultNetwork: "mumbai",
+  networks: {
+    hardhat: {
+    },
+    mumbai: {
+      url: process.env.POLYGON_MUMBAI_RPC_PROVIDER,
+      accounts: [process.env.PRIVATE_KEY]
+    }
+  },
+  solidity: {
+    version: "0.8.18",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
+  },
+  etherscan: {
+    apiKey: process.env.POLYGONSCAN_API_KEY,
+  }
 };

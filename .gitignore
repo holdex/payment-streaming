@@ -4,6 +4,8 @@ artifacts
 typechain
 typechain-types
 node_modules
+.env
+
 
 # OpenZeppelin
 .openzeppelin/unknown-*.json
