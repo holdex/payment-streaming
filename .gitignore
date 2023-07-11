@@ -4,13 +4,10 @@ artifacts
 typechain
 typechain-types
 node_modules
-<<<<<<< HEAD
 .env
 
-=======
 coverage
 coverage.json
->>>>>>> c042bc0 (feat: solidity coverage package (#58))
 
 # OpenZeppelin
 .openzeppelin/unknown-*.json
