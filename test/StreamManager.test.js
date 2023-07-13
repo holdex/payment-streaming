@@ -277,12 +277,12 @@ describe("StreamManager", function () {
     ).to.be.revertedWith('CanNotClaimAnyMore')
   })
 
-  // Expecing rever with `NotPayee`
+  // Expecing revert with `NotPayee`
   it('Claim: only payee can call this function;', async () => {
     await expect(this.streamManager.connect(this.admin).claim()).to.be.revertedWith("NotPayee");
   })
 
-  // Expecing rever with `CliffPeriodIsNotEnded`
+  // Expecing revert with `CliffPeriodIsNotEnded`
   it('Claim: cliff period is not ended;', async () => {
     // Creating stream
     await this.streamManager.createOpenStream(
@@ -296,7 +296,7 @@ describe("StreamManager", function () {
     ).to.be.revertedWith("CliffPeriodIsNotEnded");
   })
 
-  // Expecing rever with `ReentrancyGuardReentrantCall`
+  // Expecing revert with `ReentrancyGuardReentrantCall`
   it("claim: if reentrant call is detected;", async () => {
     // Create the open stream
     await this.streamManager.createOpenStream(
