@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
-describe("StreamManager", function () {
+describe("StreamManager:", function () {
   before(async () => {
     const [admin, payer, payee1, payee2, payee3, payee4] = await ethers.getSigners();
     this.admin = admin
@@ -196,14 +196,14 @@ describe("StreamManager", function () {
   });
 
   // Expecting revert with NotPayer
-  it('Terminating failed: only payer can terminate', async () => {
+  it('Terminating failed: only payer can terminate;', async () => {
     await expect(
       this.streamManager.connect(this.payee2).terminate(this.payee1.address))
       .to.be.revertedWith('NotPayer')
   })
   
   // Expecting success
-  it('Terminating succeeding', async () => {
+  it('Terminating succeeding;', async () => {
     await expect(
       this.streamManager.connect(this.payer).terminate(this.payee1.address))
       .to.emit(this.streamManager, 'StreamTerminated')
@@ -219,7 +219,7 @@ describe("StreamManager", function () {
 
   // Tests for `claim();`
   // Claiming USDT
-  it('Claiming succeed', async () => {
+  it('Claiming succeed;', async () => {
     const currentTimestamp = 2 * 24 * 3600
     const claimablePeriod = currentTimestamp - this.cliffPeriod
     const expectedAmount = Math.floor(claimablePeriod * this.rate / 30 / 24 / 3600)
@@ -231,10 +231,10 @@ describe("StreamManager", function () {
     .withArgs(this.payee1.address, expectedAmount)
   })
 
-  // TODO: fix this test
-  it('Claiming failed: insufficient funds', async () => {
+  // Expecting revert with `InsufficientBalance`
+  it('Claiming failed: insufficient funds;', async () => {
     // Minting tokens to `StreamManager`
-    await this.mockUSDT.mint(this.streamManager.address, this.amount)
+    await this.mockUSDT.mint(this.streamManager.address, 100)
 
     // Creating stream
     await this.streamManager.createOpenStream(
@@ -246,19 +246,17 @@ describe("StreamManager", function () {
 
     await time.increase(17 * 24 * 3600); // + 17 days
     // claimed after 17 days from terminated point
-    await this.streamManager.connect(this.payee1).claim()
-
-    //console.log("payee: ", await this.mockUSDT.balanceOf(this.payee1.address))
+    await this.streamManager.connect(this.payee2).claim()
 
     // tried to claim after 2 days but insufficient funds
-    await time.increase(8 * 24 * 3600); // + 2 days
+    await time.increase(4 * 24 * 3600); // + 4 days
     await expect(
-      this.streamManager.connect(this.payee1).claim()
+      this.streamManager.connect(this.payee2).claim()
     ).to.be.revertedWith('InsufficientBalance')
   })
 
-  // TODO: fix this test
-  it('Claiming failed: payee claimed after the permination period, so can not claim any more', async () => {
+  // Expecting revert with `CanNotClaimAnyMore`
+  it('Claiming failed: payee claimed after the permination period, so can not claim any more;', async () => {
     // So payer deposited again.
     await this.mockUSDT.connect(this.payer).approve(this.streamManager.address, this.amount)
     await  this.streamManager.connect(this.payer).deposit(
