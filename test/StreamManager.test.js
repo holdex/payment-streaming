@@ -277,4 +277,29 @@ describe("StreamManager", function () {
     ).to.be.revertedWith('CanNotClaimAnyMore')
   })
 
+  it('Creating next open stream instance fails: previous open stream has terminated, but payee can still claim(still in termination period)', async () => {
+    // Creates first open stream
+    await this.streamManager.createOpenStream(
+      this.payee2.address,
+      this.mockUSDT.address,
+      this.rate,
+      this.terminationPeriod,
+      this.cliffPeriod
+    )
+
+    await time.increase(10 * 24 * 3600); // + 10 days
+    // terminate 
+    await this.streamManager.connect(this.payer).terminate(this.payee2.address)
+
+    await expect(
+      this.streamManager.createOpenStream(
+        this.payee2.address,
+        this.mockUSDT.address,
+        this.rate,
+        this.terminationPeriod,
+        this.cliffPeriod
+      )
+    ).to.be.revertedWith('StreamIsTerminating');
+  })
+
 });
