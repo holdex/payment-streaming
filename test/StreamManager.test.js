@@ -302,4 +302,19 @@ describe("StreamManager", function () {
     ).to.be.revertedWith('StreamIsTerminating');
   })
 
+  it('Creating next open stream instance success', async () => {
+    await time.increase(20 * 24 * 3600); // + 20 days
+
+    await expect(
+      this.streamManager.createOpenStream(
+        this.payee2.address,
+        this.mockUSDT.address,
+        this.rate,
+        this.terminationPeriod,
+        this.cliffPeriod
+      )
+    ).to.emit(this.streamManager, "StreamCreated")
+    .withArgs(this.admin.address, this.payee2.address);
+  })
+
 });
