@@ -4,12 +4,13 @@ const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("StreamManager", function () {
   before(async () => {
-    const [admin, payer, payee1, payee2, payee3] = await ethers.getSigners();
+    const [admin, payer, payee1, payee2, payee3, payee4] = await ethers.getSigners();
     this.admin = admin
     this.payer = payer
     this.payee1 = payee1
     this.payee2 = payee2
     this.payee3 = payee3
+    this.payee4 = payee4
     this.zero = ethers.constants.AddressZero
     this.amount = 1000
     this.rate = 1500
@@ -247,7 +248,7 @@ describe("StreamManager", function () {
     // claimed after 17 days from terminated point
     await this.streamManager.connect(this.payee1).claim()
 
-    console.log("payee: ", await this.mockUSDT.balanceOf(this.payee1.address))
+    //console.log("payee: ", await this.mockUSDT.balanceOf(this.payee1.address))
 
     // tried to claim after 2 days but insufficient funds
     await time.increase(8 * 24 * 3600); // + 2 days
@@ -266,6 +267,10 @@ describe("StreamManager", function () {
     )
     // claimed again.
     await this.streamManager.connect(this.payee1).claim()
+
+    // Increase time to elapse the termination period
+    await time.increase(this.terminationPeriod);
+
     // after this claim, payee1 can't claim any more becuase termination period is 18 days. but already elapsed 19 days.
     await expect(
       this.streamManager.connect(this.payee1).claim()
@@ -277,26 +282,26 @@ describe("StreamManager", function () {
     await expect(this.streamManager.connect(this.admin).claim()).to.be.revertedWith("NotPayee");
   })
 
-  // Expecting revert with `CliffPeriodIsNotEnded` TODO: fix this test
+  // Expecting revert with `CliffPeriodIsNotEnded`
   it('Claim: cliff period is not ended;', async () => {
     // Creating stream
     await this.streamManager.createOpenStream(
-        this.payee2.address,
+        this.payee3.address,
         this.mockUSDT.address,
         this.rate,
         this.terminationPeriod,
         this.cliffPeriod)
 
-    await expect(this.streamManager.connect(this.payee1).claim()
+    await expect(this.streamManager.connect(this.payee3).claim()
     ).to.be.revertedWith("CliffPeriodIsNotEnded");
   })
 
 
-  // Expecting revert with `ReentrancyGuardReentrantCall` TODO: fix this test
+  // Expecting revert with `ReentrancyGuardReentrantCall`
   it("Сlaim: if reentrant call is detected;", async () => {
     // Create the open stream
     await this.streamManager.createOpenStream(
-      this.payee3.address,
+      this.payee4.address,
       this.mockUSDT.address,
       this.amount,
       this.terminationPeriod,
@@ -310,9 +315,9 @@ describe("StreamManager", function () {
     await this.mockUSDT.mint(this.streamManager.address, this.amount)
 
     // The first call should succeed
-    await expect(this.streamManager.connect(this.payee1).claim()).to.not.be.reverted
+    await expect(this.streamManager.connect(this.payee4).claim()).to.not.be.reverted
     // Recall should return an error
-    expect(this.streamManager.connect(this.payee1).claim()).to.be.revertedWith('ReentrancyGuardReentrantCall')
+    expect(this.streamManager.connect(this.payee4).claim()).to.be.revertedWith('ReentrancyGuardReentrantCall')
   })
 });
   
