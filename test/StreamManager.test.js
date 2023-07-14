@@ -119,6 +119,17 @@ describe("StreamManager", function () {
     ).to.be.revertedWith('InvalidValue');
   })
 
+  // Expecting revert with `OpenStreamExists`
+  it('Creating open stream instance: Previous stream has not been ended', async () => {
+    await expect(this.streamManager.createOpenStream(
+      this.payee1.address,
+      this.mockUSDT.address,
+      this.rate,
+      this.terminationPeriod,
+      this.cliffPeriod
+    )).to.be.revertedWith('OpenStreamExists');
+  })
+
   // Tests for `deposit();`
   // Deposit USDT(mock)
   it('Deposit succeed;', async () => {
