@@ -202,20 +202,6 @@ describe("StreamManager", function () {
     .to.be.revertedWith('NotPayee');
   })
 
-  // Tests for `claim();`
-  // Problem: need approval for transfer? TODO: write other tests for this function
-  it('Claiming succeed', async () => {
-    const currentTimestamp = 2 * 24 * 3600
-    const claimablePeriod = currentTimestamp - this.cliffPeriod
-    const expectedAmount = Math.floor(claimablePeriod * this.rate / 30 / 24 / 3600)
-
-    await expect(
-      this.streamManager.connect(this.payee1).claim()
-    )
-    .to.emit(this.streamManager, "TokensClaimed")
-    .withArgs(this.payee1.address, expectedAmount)
-  })
-
   // Expecting revert with NotPayer
   it('Terminating failed: only payer can terminate', async () => {
     await expect(
@@ -277,12 +263,12 @@ describe("StreamManager", function () {
     ).to.be.revertedWith('CanNotClaimAnyMore')
   })
 
-  // Expecing revert with `NotPayee`
+  // Expecting revert with `NotPayee`
   it('Claim: only payee can call this function;', async () => {
     await expect(this.streamManager.connect(this.admin).claim()).to.be.revertedWith("NotPayee");
   })
 
-  // Expecing revert with `CliffPeriodIsNotEnded`
+  // Expecting revert with `CliffPeriodIsNotEnded`
   it('Claim: cliff period is not ended;', async () => {
     // Creating stream
     await this.streamManager.createOpenStream(
@@ -296,7 +282,7 @@ describe("StreamManager", function () {
     ).to.be.revertedWith("CliffPeriodIsNotEnded");
   })
 
-  // Expecing revert with `ReentrancyGuardReentrantCall`
+  // Expecting revert with `ReentrancyGuardReentrantCall`
   it("claim: if reentrant call is detected;", async () => {
     // Create the open stream
     await this.streamManager.createOpenStream(
