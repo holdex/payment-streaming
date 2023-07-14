@@ -6,7 +6,7 @@ require("dotenv").config();
 require("solidity-coverage");
 
 module.exports = {
-  defaultNetwork: "mumbai",
+  defaultNetwork: "hardhat", //"mumbai",
   networks: {
     hardhat: {
     },
