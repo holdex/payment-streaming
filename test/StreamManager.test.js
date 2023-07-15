@@ -4,13 +4,15 @@ const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("StreamManager:", function () {
   before(async () => {
-    const [admin, payer, payee1, payee2, payee3, payee4] = await ethers.getSigners();
+    const [admin, payer, payee1, payee2, payee3, payee4, payee5, payee6] = await ethers.getSigners();
     this.admin = admin
     this.payer = payer
     this.payee1 = payee1
     this.payee2 = payee2
     this.payee3 = payee3
     this.payee4 = payee4
+    this.payee5 = payee5
+    this.payee6 = payee6
     this.zero = ethers.constants.AddressZero
     this.amount = 1000
     this.rate = 1500
@@ -118,6 +120,17 @@ describe("StreamManager:", function () {
         0
       )
     ).to.be.revertedWith('InvalidValue');
+  })
+
+  // Expecting revert with `OpenStreamExists`
+  it('Creating open stream instance: Previous stream has not been ended', async () => {
+    await expect(this.streamManager.createOpenStream(
+      this.payee1.address,
+      this.mockUSDT.address,
+      this.rate,
+      this.terminationPeriod,
+      this.cliffPeriod
+    )).to.be.revertedWith('OpenStreamExists');
   })
 
   // Tests for `deposit();`
@@ -275,6 +288,46 @@ describe("StreamManager:", function () {
     ).to.be.revertedWith('CanNotClaimAnyMore')
   })
 
+  it('Creating next open stream instance fails: previous open stream has terminated, but payee can still claim(still in termination period)', async () => {
+    // Creates first open stream
+    await this.streamManager.createOpenStream(
+      this.payee5.address,
+      this.mockUSDT.address,
+      this.rate,
+      this.terminationPeriod,
+      this.cliffPeriod
+    )
+
+    await time.increase(10 * 24 * 3600); // + 10 days
+    // terminate 
+    await this.streamManager.connect(this.payer).terminate(this.payee5.address)
+
+    await expect(
+      this.streamManager.createOpenStream(
+        this.payee5.address,
+        this.mockUSDT.address,
+        this.rate,
+        this.terminationPeriod,
+        this.cliffPeriod
+      )
+    ).to.be.revertedWith('StreamIsTerminating');
+  })
+
+  it('Creating next open stream instance success', async () => {
+    await time.increase(20 * 24 * 3600); // + 20 days
+
+    await expect(
+      this.streamManager.createOpenStream(
+        this.payee6.address,
+        this.mockUSDT.address,
+        this.rate,
+        this.terminationPeriod,
+        this.cliffPeriod
+      )
+    ).to.emit(this.streamManager, "StreamCreated")
+    .withArgs(this.admin.address, this.payee6.address);
+  })
+
   // Expecting revert with `NotPayee`
   it('Claim: only payee can call this function;', async () => {
     await expect(this.streamManager.connect(this.admin).claim()).to.be.revertedWith("NotPayee");
@@ -293,7 +346,6 @@ describe("StreamManager:", function () {
     await expect(this.streamManager.connect(this.payee3).claim()
     ).to.be.revertedWith("CliffPeriodIsNotEnded");
   })
-
 
   // Expecting revert with `ReentrancyGuardReentrantCall`
   it("Сlaim: if reentrant call is detected;", async () => {
@@ -318,4 +370,3 @@ describe("StreamManager:", function () {
     expect(this.streamManager.connect(this.payee4).claim()).to.be.revertedWith('ReentrancyGuardReentrantCall')
   })
 });
-  
