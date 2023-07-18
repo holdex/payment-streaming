@@ -15,7 +15,7 @@ For __testing__ the contract:
 ```plaintext
     npm run test  
 ```  
-Shows smart the contract __coverage__;  
+Shows the smart contract __coverage__;  
 ```plaintext
     npm run coverage  
 ```  
