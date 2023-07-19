@@ -269,6 +269,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     ///@dev changing address of the payer
     function changePayer(address _payer) public onlyAdmin {
         if (_payer == address(0)) revert InvalidAddress();
+        if (_payer == payer) revert InvalidAddress();
         
         payer = _payer;
         emit PayerChanging(_payer);
