@@ -42,6 +42,11 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
      * @param _payer new address  
      */
     event PayerChanging(address _payer);
+    /**
+     * @dev Changing address of fee
+     * @param _feeAddress new address of the fee
+     */
+    event AddressFeeChanging(address _feeAddress); 
 
     ///@dev errors
     error InvalidAddress();
@@ -75,6 +80,8 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     address public admin;
     ///@dev payer address
     address public payer;
+    ///@dev address for fee
+    address public feeAddress;  
     /// @dev payee's address => instance
     mapping(address => OpenStream) public streamInstances;
     /// @dev payee's address => true/false
@@ -83,6 +90,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     constructor(address _payer) {
         payer = _payer;
         admin = msg.sender;
+        feeAddress = msg.sender;
     }
 
     ///@dev check if the caller is payer
@@ -223,7 +231,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         /// @dev send claimable tokens to payee
         IERC20(token).safeTransfer(msg.sender, claimableAmount);
         /// @dev send 10% commission to manager contract
-        IERC20(token).safeTransfer(admin, protocolFee);
+        IERC20(token).safeTransfer(feeAddress, protocolFee);
         streamInstances[msg.sender].lastClaimedAt = claimedAt;
 
         emit TokensClaimed(msg.sender, claimableAmount);
@@ -273,5 +281,14 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         
         payer = _payer;
         emit PayerChanging(_payer);
+    }
+
+    ///@dev changing address of the fee
+    function chaingeAddressFee(address _feeAddress) public onlyAdmin {
+        if (_feeAddress == address(0)) revert InvalidAddress();
+        if (_feeAddress == feeAddress) revert InvalidAddress();
+
+        feeAddress = _feeAddress;
+        emit AddressFeeChanging(feeAddress);
     }
 }
