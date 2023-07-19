@@ -1,3 +1,4 @@
 // deployed contracts' addresses
+network = "mumbai"
 MockUSDT = 0x17896eD288A0aE8a604b859bc3FdB4f3f9102e0a
 StreamManager = 0xd34541599Eb965a5EF715725f48b285DA9E34d6F
