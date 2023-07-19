@@ -141,6 +141,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
 
     ///@dev it calculates claimable amount.
     function calculate(address _payee, uint256 _claimedAt) private view returns (uint256) {
+        if (_claimedAt < streamInstances[_payee].lastClaimedAt) return 0;
         unchecked {
             uint256 elapsed = _claimedAt - streamInstances[_payee].lastClaimedAt;
             return elapsed * streamInstances[_payee].rate / 30 / 24 / 3600;    
@@ -243,6 +244,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
      */
     function terminate(address _payee) external onlyPayer notTerminated {
         uint256 terminatedAt = block.timestamp;
+        if (!isPayee[_payee]) revert NotPayee();
         if (streamInstances[_payee].terminatedAt != 0) revert AlreadyTerminatedOrTerminating();
         streamInstances[_payee].isTerminated = true;
         streamInstances[_payee].terminatedAt = terminatedAt;
@@ -265,13 +267,26 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     }
 
     ///@dev shows accumulated amount in USDT or USDC
-    function accumulation(address _payee) public view returns(uint256) {
+    function accumulation(address _payee) public view returns(uint256 amount) {
         if (block.timestamp <= streamInstances[_payee].createdAt + streamInstances[_payee].cliffPeriod)
             return 0;
+        bool isTerminated = streamInstances[_payee].isTerminated;
+        uint256 terminatedAt = streamInstances[_payee].terminatedAt;
+        uint256 terminationPeriod = streamInstances[_payee].terminationPeriod;
+        if (!isTerminated || isTerminated && block.timestamp <= terminatedAt + terminationPeriod) {
+            amount = calculate(_payee, block.timestamp);
+        } else {
+            amount = calculate(_payee, terminatedAt + terminationPeriod);
+        }
+    }
 
-        uint256 amount = calculate(_payee, block.timestamp);
-        //@dev return the amount
-        return amount;
+    ///@dev changing address of the payer
+    function changePayer(address _payer) public onlyAdmin {
+        if (_payer == address(0)) revert InvalidAddress();
+        if (_payer == payer) revert InvalidAddress();
+        
+        payer = _payer;
+        emit PayerChanging(_payer);
     }
 
     ///@dev changing address of the payer
