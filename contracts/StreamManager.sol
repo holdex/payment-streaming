@@ -79,9 +79,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     ///@dev admin address
     address public admin;
     ///@dev payer address
-    address public payer;
-    ///@dev address for fee
-    address public feeAddress;  
+    address public payer;  
     /// @dev payee's address => instance
     mapping(address => OpenStream) public streamInstances;
     /// @dev payee's address => true/false
@@ -231,7 +229,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         /// @dev send claimable tokens to payee
         IERC20(token).safeTransfer(msg.sender, claimableAmount);
         /// @dev send 10% commission to manager contract
-        IERC20(token).safeTransfer(feeAddress, protocolFee);
+        IERC20(token).safeTransfer(admin, protocolFee);
         streamInstances[msg.sender].lastClaimedAt = claimedAt;
 
         emit TokensClaimed(msg.sender, claimableAmount);
@@ -291,9 +289,9 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     ///@dev changing address of the fee
     function chaingeAddressFee(address _feeAddress) public onlyAdmin {
         if (_feeAddress == address(0)) revert InvalidAddress();
-        if (_feeAddress == feeAddress) revert InvalidAddress();
+        if (_feeAddress == admin) revert InvalidAddress();
 
         admin = _feeAddress;
-        emit AddressFeeChanged(feeAddress);
+        emit AddressFeeChanged(admin);
     }
 }
