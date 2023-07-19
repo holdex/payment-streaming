@@ -46,7 +46,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
      * @dev Changing address of fee
      * @param _feeAddress new address of the fee
      */
-    event AddressFeeChanging(address _feeAddress); 
+    event AddressFeeChanged(address _feeAddress); 
 
     ///@dev errors
     error InvalidAddress();
@@ -90,7 +90,6 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     constructor(address _payer) {
         payer = _payer;
         admin = msg.sender;
-        feeAddress = msg.sender;
     }
 
     ///@dev check if the caller is payer
@@ -294,7 +293,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         if (_feeAddress == address(0)) revert InvalidAddress();
         if (_feeAddress == feeAddress) revert InvalidAddress();
 
-        feeAddress = _feeAddress;
-        emit AddressFeeChanging(feeAddress);
+        admin = _feeAddress;
+        emit AddressFeeChanged(feeAddress);
     }
 }
