@@ -32,7 +32,7 @@ __Terminating__ the stream instance:
 __Deposit__ tokens:  
   `deposit();`  
   
-Shows __accumulated__ amount in USDT or USDC:
+Shows __accumulated__ amount in USDT or USDC:  
   `accumulation();`  
 ### Hint :
 ```plaintext
