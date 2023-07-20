@@ -213,7 +213,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         uint256 terminatedAt = block.timestamp;
         if (!isPayee[_payee]) revert NotPayee();
         if (streamInstances[_payee].terminatedAt != 0) revert AlreadyTerminatedOrTerminating();
-        /// Terminte in cliff period
+        /// Terminate in cliff period
         if (streamInstances[_payee].createdAt + streamInstances[_payee].cliffPeriod >= block.timestamp)
             isPayee[_payee] = false;
         streamInstances[_payee].isTerminated = true;

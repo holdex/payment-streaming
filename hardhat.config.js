@@ -11,12 +11,12 @@ const {
 } = process.env;
 
 module.exports = {
-  defaultNetwork: "hardhat", //"mumbai",
+  defaultNetwork: "sepolia",
   networks: {
     hardhat: {
     },
-    mumbai: {
-      url: "https://rpc-mumbai.maticvigil.com/",
+    sepolia: {
+      url: process.env.SEPOLIA_PROVIDER,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
     }
   },
@@ -30,6 +30,6 @@ module.exports = {
     }
   },
   etherscan: {
-    apiKey: process.env.POLYGONSCAN_API_KEY,
+    apiKey: process.env.ETHERSCAN_API_KEY,
   }
 };
