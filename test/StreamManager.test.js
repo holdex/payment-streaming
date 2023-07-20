@@ -384,7 +384,7 @@ describe("StreamManager:", function () {
   })
 
   // Tests for `changePayer();`
-  // Changing the address payer
+  // Changing the address the payer
   it.only('changePayer: address of the payer is changing', async () => {
     await expect(
       this.streamManager.connect(this.admin).changePayer(this.payee1.address)
@@ -393,14 +393,14 @@ describe("StreamManager:", function () {
   })
 
   // Expecting revert with `NotAdmin`
-  it.only('changePayer: only the admin can call the function', async () => {
+  it.only('changePayer: only the admin can call this function', async () => {
     await expect(
       this.streamManager.connect(this.payee4).changePayer(this.payee1.address)
       ).to.be.revertedWith('NotAdmin')
   })
 
   // Expecting revert with `InvalidAddress`
-  it.only('changePayer: not can setting address(0) how address of the payer', async () => {
+  it.only('changePayer: can not set the address to address(0)', async () => {
     await expect(
       this.streamManager.connect(this.admin).changePayer(this.zero)
       ).to.be.revertedWith('InvalidAddress')
@@ -430,7 +430,7 @@ describe("StreamManager:", function () {
   })
 
   // Expecting revert with `InvalidAddress`
-  it.only('chaingeAddressFee: not can setting address(0) how address of the admin', async () => {
+  it.only('chaingeAddressFee: can not set address to zero', async () => {
     await expect(
       this.streamManager.connect(this.payee1).chaingeAddressFee(this.zero)
       ).to.be.revertedWith('InvalidAddress')
