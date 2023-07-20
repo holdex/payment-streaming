@@ -7,16 +7,16 @@ require("solidity-coverage");
 
 const {
   PRIVATE_KEY,
-  POLYGONSCAN_API_KEY,
+  ETHERSCAN_API_KEY,
 } = process.env;
 
 module.exports = {
-  defaultNetwork: "sepolia",
+  defaultNetwork: "hardhat", //sepolia",
   networks: {
     hardhat: {
     },
     sepolia: {
-      url: process.env.SEPOLIA_PROVIDER,
+      url: "https://eth-sepolia.g.alchemy.com/v2/_cXtbxQbXZ7hLhL6PDj5HvCIe0mAzOz8",
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
     }
   },
@@ -30,6 +30,6 @@ module.exports = {
     }
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: ETHERSCAN_API_KEY,
   }
 };

@@ -178,13 +178,14 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         external
     {
         uint256 claimedAt = block.timestamp;
-        uint256 terminatedAt = streamInstances[msg.sender].terminatedAt;
-        address token = streamInstances[msg.sender].token;
-        uint256 terminationPeriod = streamInstances[msg.sender].terminationPeriod;
-        bool isTerminated = streamInstances[msg.sender].isTerminated;
+        OpenStream storage streamInstance = streamInstances[msg.sender];
+        uint256 terminatedAt = streamInstance.terminatedAt;
+        address token = streamInstance.token;
+        uint256 terminationPeriod = streamInstance.terminationPeriod;
+        bool isTerminated = streamInstance.isTerminated;
         uint256 claimableAmount;
 
-        if (!isTerminated || isTerminated && claimedAt < terminatedAt + terminationPeriod) {
+        if (!isTerminated || (isTerminated && claimedAt < terminatedAt + terminationPeriod)) {
             claimableAmount = calculate(msg.sender, claimedAt);
         } else {
             ///@dev after the stream finished, payee can claim tokens which is accumulated until the termination period and can't claim anymore.
@@ -238,13 +239,14 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
 
     ///@dev shows accumulated amount in USDT or USDC
     function accumulation(address _payee) public view returns(uint256 amount) {
+        OpenStream memory streamInstance = streamInstances[_payee];
         if (!isPayee[_payee]) return 0;
-        if (block.timestamp <= streamInstances[_payee].createdAt + streamInstances[_payee].cliffPeriod)
+        if (block.timestamp <= streamInstance.createdAt + streamInstance.cliffPeriod)
             return 0;
-        bool isTerminated = streamInstances[_payee].isTerminated;
-        uint256 terminatedAt = streamInstances[_payee].terminatedAt;
-        uint256 terminationPeriod = streamInstances[_payee].terminationPeriod;
-        if (!isTerminated || isTerminated && block.timestamp <= terminatedAt + terminationPeriod) {
+        bool isTerminated = streamInstance.isTerminated;
+        uint256 terminatedAt = streamInstance.terminatedAt;
+        uint256 terminationPeriod = streamInstance.terminationPeriod;
+        if (!isTerminated || (isTerminated && block.timestamp <= terminatedAt + terminationPeriod)) {
             amount = calculate(_payee, block.timestamp);
         } else {
             amount = calculate(_payee, terminatedAt + terminationPeriod);
