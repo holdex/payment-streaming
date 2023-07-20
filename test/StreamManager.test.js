@@ -383,63 +383,63 @@ describe("StreamManager:", function () {
     expect(this.streamManager.connect(this.payee4).claim()).to.be.revertedWith('ReentrancyGuardReentrantCall')
   })
 
-  // Tests for `changePayer();`
+  // Tests for `changePayerAddress();`
   // Changing the address payer
-  it.only('changePayer: address of the payer is changing', async () => {
+  it('Change payer: address of the payer is changing', async () => {
     await expect(
-      this.streamManager.connect(this.admin).changePayer(this.payee1.address)
-    ).to.emit(this.streamManager, "PayerChanging")
+      this.streamManager.connect(this.admin).changePayerAddress(this.payee1.address)
+    ).to.emit(this.streamManager, "PayerAddressChanged")
     .withArgs(this.payee1.address);
   })
 
   // Expecting revert with `NotAdmin`
-  it.only('changePayer: only the admin can call the function', async () => {
+  it('Change payer: only the admin can call the function', async () => {
     await expect(
-      this.streamManager.connect(this.payee4).changePayer(this.payee1.address)
+      this.streamManager.connect(this.payee4).changePayerAddress(this.payee1.address)
       ).to.be.revertedWith('NotAdmin')
   })
 
   // Expecting revert with `InvalidAddress`
-  it.only('changePayer: not can setting address(0) how address of the payer', async () => {
+  it('Change payer: not can setting address(0) how address of the payer', async () => {
     await expect(
-      this.streamManager.connect(this.admin).changePayer(this.zero)
+      this.streamManager.connect(this.admin).changePayerAddress(this.zero)
       ).to.be.revertedWith('InvalidAddress')
   })
 
   // Expecting revert with `InvalidAddress`
-  it.only('changePayer: not can setting same address how the address what to was setting', async () => {
+  it('Change payer: existing address and new address must not match', async () => {
     await expect(
-      this.streamManager.connect(this.admin).changePayer(this.payee1.address)
+      this.streamManager.connect(this.admin).changePayerAddress(this.payee1.address)
       ).to.be.revertedWith('InvalidAddress')
   })
 
-  // Tests for `chaingeAddressFee();`
-  // Changing the address payer
-  it.only('changePayer: address of the admin is changing', async () => {
+  // Tests for `changeCommissionAddress();`
+  // Changing the address of the commission
+  it('Chainge address fee: address of the admin is changing', async () => {
     await expect(
-      this.streamManager.connect(this.admin).chaingeAddressFee(this.payee1.address)
-    ).to.emit(this.streamManager, "AddressFeeChanged")
+      this.streamManager.connect(this.admin).changeCommissionAddress(this.payee1.address)
+    ).to.emit(this.streamManager, "CommissionAddressChanged")
     .withArgs(this.payee1.address);
   })
 
   // Expecting revert with `NotAdmin`
-  it.only('chaingeAddressFee: only the admin can call the function', async () => {
+  it('Chainge address fee: only the admin can call the function', async () => {
     await expect(
-      this.streamManager.connect(this.payee4).chaingeAddressFee(this.payee1.address)
+      this.streamManager.connect(this.payee4).changeCommissionAddress(this.payee1.address)
       ).to.be.revertedWith('NotAdmin')
   })
 
   // Expecting revert with `InvalidAddress`
-  it.only('chaingeAddressFee: not can setting address(0) how address of the admin', async () => {
+  it('Chainge address fee: not can setting address(0) how address of the admin', async () => {
     await expect(
-      this.streamManager.connect(this.payee1).chaingeAddressFee(this.zero)
+      this.streamManager.connect(this.payee1).changeCommissionAddress(this.zero)
       ).to.be.revertedWith('InvalidAddress')
   })
 
   // Expecting revert with `InvalidAddress`
-  /*it.only('chaingeAddressFee: not can setting same address how the address what to was setting', async () => {
+  it('Chainge address fee: existing address and new address must not match', async () => {
     await expect(
-      this.streamManager.connect(this.admin).changePayer(this.payee1.address)
+      this.streamManager.connect(this.payee1).changeCommissionAddress(this.payee1.address)
       ).to.be.revertedWith('InvalidAddress')
-  })*/
+  })
 });
