@@ -289,7 +289,6 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     ///@dev changing address of the fee
     function chaingeAddressFee(address _feeAddress) public onlyAdmin {
         if (_feeAddress == address(0)) revert InvalidAddress();
-        if (_feeAddress == admin) revert InvalidAddress();
 
         admin = _feeAddress;
         emit AddressFeeChanged(admin);
