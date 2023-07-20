@@ -382,4 +382,64 @@ describe("StreamManager:", function () {
     // Recall should return an error
     expect(this.streamManager.connect(this.payee4).claim()).to.be.revertedWith('ReentrancyGuardReentrantCall')
   })
+
+  // Tests for `changePayer();`
+  // Changing the address payer
+  it.only('changePayer: address of the payer is changing', async () => {
+    await expect(
+      this.streamManager.connect(this.admin).changePayer(this.payee1.address)
+    ).to.emit(this.streamManager, "PayerChanging")
+    .withArgs(this.payee1.address);
+  })
+
+  // Expecting revert with `NotAdmin`
+  it.only('changePayer: only the admin can call the function', async () => {
+    await expect(
+      this.streamManager.connect(this.payee4).changePayer(this.payee1.address)
+      ).to.be.revertedWith('NotAdmin')
+  })
+
+  // Expecting revert with `InvalidAddress`
+  it.only('changePayer: not can setting address(0) how address of the payer', async () => {
+    await expect(
+      this.streamManager.connect(this.admin).changePayer(this.zero)
+      ).to.be.revertedWith('InvalidAddress')
+  })
+
+  // Expecting revert with `InvalidAddress`
+  it.only('changePayer: not can setting same address how the address what to was setting', async () => {
+    await expect(
+      this.streamManager.connect(this.admin).changePayer(this.payee1.address)
+      ).to.be.revertedWith('InvalidAddress')
+  })
+
+  // Tests for `chaingeAddressFee();`
+  // Changing the address payer
+  it.only('changePayer: address of the admin is changing', async () => {
+    await expect(
+      this.streamManager.connect(this.admin).chaingeAddressFee(this.payee1.address)
+    ).to.emit(this.streamManager, "AddressFeeChanged")
+    .withArgs(this.payee1.address);
+  })
+
+  // Expecting revert with `NotAdmin`
+  it.only('chaingeAddressFee: only the admin can call the function', async () => {
+    await expect(
+      this.streamManager.connect(this.payee4).chaingeAddressFee(this.payee1.address)
+      ).to.be.revertedWith('NotAdmin')
+  })
+
+  // Expecting revert with `InvalidAddress`
+  it.only('chaingeAddressFee: not can setting address(0) how address of the admin', async () => {
+    await expect(
+      this.streamManager.connect(this.payee1).chaingeAddressFee(this.zero)
+      ).to.be.revertedWith('InvalidAddress')
+  })
+
+  // Expecting revert with `InvalidAddress`
+  /*it.only('chaingeAddressFee: not can setting same address how the address what to was setting', async () => {
+    await expect(
+      this.streamManager.connect(this.admin).changePayer(this.payee1.address)
+      ).to.be.revertedWith('InvalidAddress')
+  })*/
 });
