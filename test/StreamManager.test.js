@@ -4,9 +4,10 @@ const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("StreamManager:", function () {
   before(async () => {
-    const [admin, payer, payee1, payee2, payee3, payee4, payee5, payee6] = await ethers.getSigners();
+    const [admin, payer, payer2, payee1, payee2, payee3, payee4, payee5, payee6] = await ethers.getSigners();
     this.admin = admin
     this.payer = payer
+    this.payer2 = payer2
     this.payee1 = payee1
     this.payee2 = payee2
     this.payee3 = payee3
@@ -59,6 +60,19 @@ describe("StreamManager:", function () {
     ))
     .to.emit(this.streamManager, "StreamCreated")
     .withArgs(this.payer.address, this.payee1.address)
+  })
+
+  // Expecting revert with NotPayer
+  it('Creating open stream instance: fail if caller is not the payer', async () => {
+    await expect(
+      this.streamManager.connect(this.payer2).createOpenStream(
+        this.payee1.address,
+        this.mockUSDT.address,
+        this.rate,
+        this.terminationPeriod,
+        this.cliffPeriod
+      )
+    ).to.be.revertedWith('NotPayer');
   })
 
   // Expecting revert with `InvalidAddress`
@@ -207,12 +221,19 @@ describe("StreamManager:", function () {
     const expectedAmount = Math.floor(claimablePeriod * this.rate / 30 / 24 / 3600)
     expect(accumulatedAmount).to.equal(expectedAmount)
   });
-
+  
   // Expecting revert with NotPayer
   it('Terminating failed: only payer can terminate;', async () => {
     await expect(
       this.streamManager.connect(this.payee2).terminate(this.payee1.address))
       .to.be.revertedWith('NotPayer')
+  })
+  
+  // Expecting revert with NotPayee
+  it('Terminating failed: payer can terminate for only payee;', async () => {
+    await expect(
+      this.streamManager.connect(this.payer).terminate(this.payee6.address))
+      .to.be.revertedWith('NotPayee')
   })
   
   // Expecting success
