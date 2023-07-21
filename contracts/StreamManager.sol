@@ -201,7 +201,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         IERC20(token).safeTransfer(msg.sender, claimableAmount);
         /// @dev send 10% commission to manager contract
         IERC20(token).safeTransfer(admin, protocolFee);
-        streamInstances[msg.sender].lastClaimedAt = claimedAt;
+        streamInstance.lastClaimedAt = claimedAt;
 
         emit TokensClaimed(msg.sender, claimableAmount);
     }
@@ -212,13 +212,14 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
      */
     function terminate(address _payee) external onlyPayer notTerminated {
         uint256 terminatedAt = block.timestamp;
+        OpenStream storage streamInstance = streamInstances[_payee];
         if (!isPayee[_payee]) revert NotPayee();
-        if (streamInstances[_payee].terminatedAt != 0) revert AlreadyTerminatedOrTerminating();
+        if (streamInstance.terminatedAt != 0) revert AlreadyTerminatedOrTerminating();
         /// Terminate in cliff period
-        if (streamInstances[_payee].createdAt + streamInstances[_payee].cliffPeriod >= block.timestamp)
+        if (streamInstance.createdAt + streamInstance.cliffPeriod >= block.timestamp)
             isPayee[_payee] = false;
-        streamInstances[_payee].isTerminated = true;
-        streamInstances[_payee].terminatedAt = terminatedAt;
+        streamInstance.isTerminated = true;
+        streamInstance.terminatedAt = terminatedAt;
 
         emit StreamTerminated(_payee);
     }
