@@ -183,4 +183,101 @@ describe.only("StreamManager:", async () => {
 		    .to.be.revertedWith('NotPayer');
 		})
 	})
+
+	describe("terminate();", async () => {
+		// Tests for `terminate();`
+		// Expecting success
+		it('Terminating succeeding;', async () => {
+
+			const { admin, payer, payee1, payee2 } = await loadFixture(getSigners)
+	    	const { streamManager, mockUSDT } = await loadFixture(getDeployContracts)
+
+	    	// Creating stream
+		    await streamManager.connect(payer).createOpenStream(
+		        payee1.address,
+		        mockUSDT.address,
+		        rate,
+		        terminationPeriod,
+		        cliffPeriod)
+
+			await expect(
+				streamManager.connect(payer).terminate(payee1.address))
+			.to.emit(streamManager, 'StreamTerminated')
+			.withArgs(payee1.address)
+		})
+		// Expecting revert with `NotPayer``
+	  	it('Terminate: only payer can terminate;', async () => {
+
+	  		const { admin, payer, payee1, payee2 } = await loadFixture(getSigners)
+	    	const { streamManager, mockUSDT } = await loadFixture(getDeployContracts)
+
+	    	await expect(
+	      		streamManager.connect(payee2).terminate(payee1.address))
+	      	.to.be.revertedWith('NotPayer')
+	  	})  
+		// Expect revert with `AlreadyTerminatedOrTerminating``
+		it('Terminate: stream is already terminated;', async () => {
+
+			const { admin, payer, payee1, payee2 } = await loadFixture(getSigners)
+	    	const { streamManager, mockUSDT } = await loadFixture(getDeployContracts)
+
+	    	// Creating stream
+		    await streamManager.connect(payer).createOpenStream(
+		        payee1.address,
+		        mockUSDT.address,
+		        rate,
+		        terminationPeriod,
+		        cliffPeriod)
+
+		    await time.increase(4 * 24 * 3600); // + 4 days
+
+		    // First terminating
+		    await streamManager.connect(payer).terminate(payee1.address)
+
+		    // Second terminating for `revert`
+		    await expect(
+	      		streamManager.connect(payer).terminate(payee1.address))
+	      	.to.be.revertedWith('AlreadyTerminatedOrTerminating')
+		})
+
+		// Expecting revert with `NotPayee``
+	  	it('Terminate: payee address only;', async () => {
+
+	  		const { admin, payer, payee1, payee2 } = await loadFixture(getSigners)
+	    	const { streamManager, mockUSDT } = await loadFixture(getDeployContracts)
+
+	    	await expect(
+	      		streamManager.connect(payer).terminate(admin.address))
+	      	.to.be.revertedWith('NotPayee')
+	  	})
+
+	  	// Expecting revert with `AlreadyTerminated`` TODO!: revise the logic in the SC itself
+	  	/*it('Terminate: can not re-terminate;', async () => {
+
+	  		const { admin, payer, payee1, payee2 } = await loadFixture(getSigners)
+			const { streamManager, mockUSDT } = await loadFixture(getDeployContracts)
+
+			// Creating stream
+			await streamManager.connect(payer).createOpenStream(
+			    payee1.address,
+				mockUSDT.address,
+				rate,
+				terminationPeriod,
+				cliffPeriod
+			);
+
+			await time.increase(2 * 24 * 3600); // + 2 days
+
+			// First terminating
+			//await streamManager.connect(payer).terminate(payee1.address);
+
+			// Increase block time by 1 second to allow stream status update
+			//await time.increase(1);
+
+			// Second terminating for `revert`
+			await expect(
+				streamManager.connect(payer).terminate(payee1.address)
+			).to.be.revertedWith('AlreadyTerminated');
+	  	})*/
+	})
 });
