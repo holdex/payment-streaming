@@ -17,6 +17,7 @@ describe("StreamManager:", function () {
     this.zero = ethers.constants.AddressZero
     this.amount = 1000
     this.rate = 1500
+    this.decimals = 6
     this.terminationPeriod = 18 * 24 * 3600; // 18 days
     this.cliffPeriod = 24 * 3600; // 24 hrs
 
@@ -44,7 +45,7 @@ describe("StreamManager:", function () {
     await expect(this.mockUSDT.mint(this.payer.address, amount))
       .to.emit(this.mockUSDT, "Minted")
       .withArgs(this.payer.address, amount)
-
+    expect(await this.mockUSDT.decimals()).to.equal(this.decimals)
     expect(await this.mockUSDT.balanceOf(this.payer.address)).to.equal(ethers.BigNumber.from("20000000000"))
   })
 
