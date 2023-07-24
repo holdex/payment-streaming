@@ -1,11 +1,10 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interfaces/IStreamManager.sol";
 
-contract StreamManager is IStreamManager, ReentrancyGuard {
+contract StreamManager is IStreamManager {
     using SafeERC20 for IERC20;
 
     /**
@@ -167,7 +166,6 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
     function claim()
         onlyPayee
         onlyAfterCliffPeriod
-        nonReentrant
         external
     {
         uint256 claimedAt = block.timestamp;
@@ -240,7 +238,7 @@ contract StreamManager is IStreamManager, ReentrancyGuard {
         bool isTerminated = streamInstance.isTerminated;
         uint256 terminatedAt = streamInstance.terminatedAt;
         uint256 terminationPeriod = streamInstance.terminationPeriod;
-        if (!isTerminated || (isTerminated && block.timestamp <= terminatedAt + terminationPeriod)) {
+        if (!isTerminated || (isTerminated && block.timestamp < terminatedAt + terminationPeriod)) {
             amount = calculate(_payee, block.timestamp);
         } else {
             amount = calculate(_payee, terminatedAt + terminationPeriod);
