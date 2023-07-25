@@ -4,7 +4,7 @@ const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("StreamManager:", function () {
   before(async () => {
-    const [admin, payer, payer2, payee1, payee2, payee3, payee4, payee5, payee6] = await ethers.getSigners();
+    const [admin, payer, payer2, payee1, payee2, payee3, payee4, payee5, payee6, payee7] = await ethers.getSigners();
     this.admin = admin
     this.payer = payer
     this.payer2 = payer2
@@ -14,6 +14,7 @@ describe("StreamManager:", function () {
     this.payee4 = payee4
     this.payee5 = payee5
     this.payee6 = payee6
+    this.payee7 = payee7
     this.zero = ethers.constants.AddressZero
     this.amount = 1000
     this.rate = 1500
@@ -24,6 +25,9 @@ describe("StreamManager:", function () {
     // Deploy StreamManager
     const StreamManager = await ethers.getContractFactory("StreamManager")
     this.streamManager = await StreamManager.deploy(this.payer.address)
+
+    const MaliciousToken = await ethers.getContractFactory("MaliciousToken");
+    this.maliciousToken = await MaliciousToken.deploy(this.streamManager.address);
 
     // Deploy MockUSDT
     const MockUSDT = await ethers.getContractFactory("MockUSDT")
@@ -399,6 +403,34 @@ describe("StreamManager:", function () {
     expect(await this.streamManager.accumulation(this.payee5.address)).to.equal(0)
     expect(await this.streamManager.isPayee(this.payee5.address)).to.equal(false)
   })
+    
+  it('should prevent reentrant calls', async () => {
+    await this.streamManager.connect(this.payer).createOpenStream(
+      this.payee5.address,
+      this.maliciousToken.address,
+      this.rate,
+      this.terminationPeriod,
+      this.cliffPeriod
+    )
+
+    await this.maliciousToken.mint(this.payer.address, this.amount)
+    await this.maliciousToken.connect(this.payer).approve(this.streamManager.address, this.amount)
+
+    await expect(
+      this.streamManager.connect(this.payer).deposit(
+        this.maliciousToken.address,
+        this.amount
+    ))
+    .to.emit(this.streamManager, "TokensDeposited")
+    .withArgs(this.maliciousToken.address, this.amount)
+
+    // Try to claim the stream
+    const elapsed = 2 * 24 * 3600
+    await time.increase(elapsed)
+    await expect(
+      this.streamManager.connect(this.payee5).claim()
+    ).to.be.revertedWith("ReentrancyGuard: reentrant call");
+  });
 
   // Tests for `changePayerAddress();`
   // Changing the address payer

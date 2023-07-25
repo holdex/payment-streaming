@@ -1,10 +1,11 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interfaces/IStreamManager.sol";
 
-contract StreamManager is IStreamManager {
+contract StreamManager is IStreamManager, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     /**
@@ -164,6 +165,7 @@ contract StreamManager is IStreamManager {
 
     ///@dev payee can claim tokens which is proportional to elapsed time (exactly seconds).
     function claim()
+        nonReentrant
         onlyPayee
         onlyAfterCliffPeriod
         external
