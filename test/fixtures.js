@@ -25,7 +25,11 @@ async function getDeployContracts() {
       6
     );
 
-    return { streamManager, mockUSDT };
+    // Deploy MaliciousToken
+    const MaliciousToken = await ethers.getContractFactory("MaliciousToken");
+    const maliciousToken = await MaliciousToken.deploy(streamManager.address);
+
+    return { streamManager, mockUSDT, maliciousToken };
 }
 
 module.exports = { getSigners, getDeployContracts }
