@@ -212,12 +212,12 @@ describe("StreamManager:", function () {
   })
 
   // Returning 0, because the current timestamp is less than the sum of the stream creation time and the "cliff" period 
-  /*it('Accumulated: timestamp not less than the sum of the stream creation time and the "cliff" period;', async () => {
+  it('Accumulated: timestamp not less than the sum of the stream creation time and the "cliff" period;', async () => {
     // Calling the `accumulation();`
     const accumulatedAmount = await this.streamManager.accumulation(this.payee1.address)
 
     expect(accumulatedAmount).to.equal(0)
-  });*/
+  });
 
   // Tests for `claim();`
   // Expect revert with NotPayee
@@ -302,7 +302,7 @@ describe("StreamManager:", function () {
   
   // Tests for `accumulation();`
   // Amount is accumulated
-  /*it('Return accumulated amount;', async () => {
+  it('Return accumulated amount;', async () => {
     // Setting timestamp
     const currentTimestamp = 44 * 24 * 3600
     const claimablePeriod = currentTimestamp - this.cliffPeriod
@@ -312,36 +312,36 @@ describe("StreamManager:", function () {
     // Calculating expected amount
     const expectedAmount = Math.floor(claimablePeriod * this.rate / 30 / 24 / 3600)
     expect(accumulatedAmount).to.equal(expectedAmount)
-  });*/
+  });
   
   // Expecting revert with NotPayer
-  /*it('Terminating failed: only payer can terminate;', async () => {
+  it('Terminating failed: only payer can terminate;', async () => {
     await expect(
       this.streamManager.connect(this.payee2).terminate(this.payee1.address))
       .to.be.revertedWith('NotPayer')
-  })*/
+  })
   
   // Expecting revert with NotPayee
-  /*it('Terminating failed: payer can terminate for only payee;', async () => {
+  it('Terminating failed: payer can terminate for only payee;', async () => {
     await expect(
       this.streamManager.connect(this.payer).terminate(this.payee5.address))
       .to.be.revertedWith('NotPayee')
-  })*/
+  })
   
   // Expecting success
-  /*it('Terminating succeeding;', async () => {
+  it('Terminating succeeding;', async () => {
     await expect(
       this.streamManager.connect(this.payer).terminate(this.payee1.address))
       .to.emit(this.streamManager, 'StreamTerminated')
       .withArgs(this.payee1.address)
-    })*/
+    })
     
   // Expect revert with Terminating
-  /*it('Terminating failed: stream is already terminated;', async () => {
+  it('Terminating failed: stream is already terminated;', async () => {
     await expect(
       this.streamManager.connect(this.payer).terminate(this.payee1.address))
       .to.be.revertedWith('Terminating')
-    })*/
+    })
   
   it('Claiming succeed for payee1;', async () => {
     const amount = this.amount * 100000
@@ -389,7 +389,7 @@ describe("StreamManager:", function () {
   })
 
   // Expecting revert with `InsufficientBalance`
-  /*it('Terminating succeed in the cliff period', async () => {
+  it('Terminating succeed in the cliff period', async () => {
     // Creating stream
     await this.streamManager.connect(this.payer).createOpenStream(
       this.payee5.address,
@@ -402,7 +402,7 @@ describe("StreamManager:", function () {
     await this.streamManager.connect(this.payer).terminate(this.payee5.address)
     expect(await this.streamManager.accumulation(this.payee5.address)).to.equal(0)
     expect(await this.streamManager.isPayee(this.payee5.address)).to.equal(false)
-  })*/
+  })
     
   it('should prevent reentrant calls', async () => {
     await this.streamManager.connect(this.payer).createOpenStream(
