@@ -194,10 +194,7 @@ describe.only("StreamManager:", async () => {
 	  	// Expect revert with `Terminating``
 		it('Terminate: stream is already terminated;', async () => {
 
-	    	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
-
-	    	// Creating stream
-	    	await createdOpenStream(payee1.address)
+	    	const { payer, payee1, streamManager, mockUSDT } = await createdOpenStream(0)
 
 		    await time.increase(4 * 24 * 3600); // + 4 days
 
@@ -213,10 +210,7 @@ describe.only("StreamManager:", async () => {
 		// Expecting success
 		it('Terminate: terminating succeed;', async () => {
 
-	    	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
-
-	    	// Creating stream
-	    	await createdOpenStream(payee1.address)
+	    	const { payer, payee1, streamManager, mockUSDT } = await createdOpenStream(0)
 
 			await expect(
 				streamManager.connect(payer).terminate(payee1.address))
@@ -227,10 +221,7 @@ describe.only("StreamManager:", async () => {
 	  	// Expecting success in the cliff period
 		it('Terminate: terminating succeed in the cliff period;', async () => {
 
-	    	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
-
-			// Creating stream
-	    	await createdOpenStream(payee1.address)
+	    	const { payer, payee1, streamManager, mockUSDT } = await createdOpenStream(0)
 
 		    await streamManager.connect(payer).terminate(payee1.address)
 		    expect(await streamManager.accumulation(payee1.address)).to.equal(0)
@@ -238,15 +229,12 @@ describe.only("StreamManager:", async () => {
 		  })
 	})
 
-	describe("accumulation();", async () => {
+	describe.only("accumulation();", async () => {
 		// Tests for `accumulation();`
 		// Returning 0, because the current timestamp is less than the sum of the stream creation time and the "cliff" period 
 		it('Accumulation: timestamp not less than the sum of the stream creation time and the "cliff" period;', async () => {
 
-	    	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
-
-	    	// Creating stream
-	    	await createdOpenStream(payee1.address)
+	    	const { payer, payee1, streamManager, mockUSDT } = await createdOpenStream(0)
 
 		    // Calling the `accumulation();`
 		    const accumulatedAmount = await streamManager.accumulation(payee1.address)
@@ -268,10 +256,7 @@ describe.only("StreamManager:", async () => {
 		// Amount is accumulated
 		it('Accumulation: returning the amount;', async () => {
 
-	    	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
-
-	    	// Creating stream
-	    	await createdOpenStream(payee1.address)
+	    	const { payer, payee1, streamManager, mockUSDT } = await createdOpenStream(0)
 
 		    await time.increase(44 * 24 * 3600); // + 44 days
 
@@ -289,10 +274,7 @@ describe.only("StreamManager:", async () => {
 		// Returning the amount if stream to not terminated
 		it('Accumulation: stream not terminated', async () => {
 
-		  	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
-
-			// Creating stream
-	    	await createdOpenStream(payee1.address)
+		  	const { payer, payee1, streamManager, mockUSDT } = await createdOpenStream(0)
 
 			await time.increase(44 * 24 * 3600); // + 44 days
 
@@ -310,10 +292,7 @@ describe.only("StreamManager:", async () => {
 		// Returning the amount if stream to terminated
 		it('Accumulation: stream terminated', async () => {
 
-		  	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
-
-			// Creating stream
-	    	await createdOpenStream(payee1.address)
+		  	const { payer, payee1, streamManager, mockUSDT } = await createdOpenStream(0)
 
 			await time.increase(44 * 24 * 3600); // + 44 days
 

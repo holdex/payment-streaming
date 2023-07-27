@@ -26,13 +26,20 @@ async function getSignersAndDeployContracts() {
 }
 
 // Creating the stream
-async function createdOpenStream(payee) {
-  const { payer, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
+async function createdOpenStream(param) {
+  const { admin, payer, payee1, payee2, streamManager, mockUSDT, maliciousToken } = await loadFixture(getSignersAndDeployContracts)
 
   const rate = 1500
   const terminationPeriod = 18 * 24 * 3600; // 18 days
   const cliffPeriod = 24 * 3600; // 24 hrs
+  let payee // for setting payee1/payee2
 
+  // Setting payee
+  if(param === 0) {
+    payee = payee1.address
+  } else {
+    payee = payee2.address
+  }
   // Creating stream
   await streamManager.connect(payer).createOpenStream(
     payee,
@@ -41,6 +48,8 @@ async function createdOpenStream(payee) {
     terminationPeriod,
     cliffPeriod
   );
+
+  return { admin, payer, payee1, payee2, streamManager, mockUSDT, maliciousToken }
 }
 
 module.exports = { getSignersAndDeployContracts, createdOpenStream }
