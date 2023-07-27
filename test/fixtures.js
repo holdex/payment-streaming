@@ -25,4 +25,22 @@ async function getSignersAndDeployContracts() {
 	return { admin, payer, payee1, payee2, streamManager, mockUSDT, maliciousToken };
 }
 
-module.exports = { getSignersAndDeployContracts }
+// Creating the stream
+async function createdOpenStream(payee) {
+  const { payer, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
+
+  const rate = 1500
+  const terminationPeriod = 18 * 24 * 3600; // 18 days
+  const cliffPeriod = 24 * 3600; // 24 hrs
+
+  // Creating stream
+  await streamManager.connect(payer).createOpenStream(
+    payee,
+    mockUSDT.address,
+    rate,
+    terminationPeriod,
+    cliffPeriod
+  );
+}
+
+module.exports = { getSignersAndDeployContracts, createdOpenStream }
