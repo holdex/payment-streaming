@@ -334,22 +334,6 @@ describe.only("StreamManager:", async () => {
 
 	describe("createOpenStream();", async () => {
 		// Tests for `createOpenStream();`
-		// Creating stream
-		it('Creating stream: creating succeed;', async () => {
-
-		  	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
-
-		    await expect(streamManager.connect(payer).createOpenStream(
-		      	payee1.address,
-		      	mockUSDT.address,
-		      	rate,
-		      	terminationPeriod,
-		      	cliffPeriod
-		    ))
-		    .to.emit(streamManager, "StreamCreated")
-		    .withArgs(payer.address, payee1.address)
-		})
-
 		// Expecting revert with `NotPayer``
 		it('Creating stream: only the payer can create a stream;', async () => {
 
@@ -466,6 +450,22 @@ describe.only("StreamManager:", async () => {
 		      terminationPeriod,
 		      cliffPeriod
 		    )).to.be.revertedWith('OpenStreamExists');
+		})
+
+		// Creating stream
+		it('Creating stream: creating succeed;', async () => {
+
+		  	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
+
+		    await expect(streamManager.connect(payer).createOpenStream(
+		      	payee1.address,
+		      	mockUSDT.address,
+		      	rate,
+		      	terminationPeriod,
+		      	cliffPeriod
+		    ))
+		    .to.emit(streamManager, "StreamCreated")
+		    .withArgs(payer.address, payee1.address)
 		})
 	})
 
