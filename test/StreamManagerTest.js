@@ -2,6 +2,8 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { time, loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const { getSignersAndDeployContracts, createdOpenStream } = require("./fixtures");
+const createdOpenStraemAsPayee1 = () => createdOpenStream(0);
+const createdOpenStraemAsPayee2 = () => createdOpenStream(1);
 
 describe.only("StreamManager:", async () => {
 	const amount = 1000
@@ -169,7 +171,7 @@ describe.only("StreamManager:", async () => {
 		})
 	})
 
-	describe("terminate();", async () => {
+	describe.only("terminate();", async () => {
 	    // Tests for `terminate();`
 	    // Expecting revert with `NotPayer``
 	    it('Terminate: only the payer can terminate;', async () => {
@@ -192,9 +194,9 @@ describe.only("StreamManager:", async () => {
 	      })
 
 	      // Expect revert with `Terminating``
-	    it('Terminate: stream is already terminated;', async () => {
+	    it.only('Terminate: stream is already terminated;', async () => {
 
-	        const { payer, payee1, streamManager, mockUSDT } = await createdOpenStream(0)
+	        const { payer, payee1, streamManager, mockUSDT } = await loadFixture(createdOpenStraemAsPayee1)// = await createdOpenStream(0)
 
 	        await time.increase(4 * 24 * 3600); // + 4 days
 
@@ -487,11 +489,11 @@ describe.only("StreamManager:", async () => {
 
 		  	// Creating stream
 		    await streamManager.connect(payer).createOpenStream(
-		      payee1.address,
-		      maliciousToken.address,
-		      rate,
-		      terminationPeriod,
-		      cliffPeriod
+		      	payee1.address,
+		      	maliciousToken.address,
+		      	rate,
+		      	terminationPeriod,
+		      	cliffPeriod
 		    )
 
 		    // Minting tokens to `payer` and approve `streamManager contract`
@@ -520,7 +522,7 @@ describe.only("StreamManager:", async () => {
 		  	const { payer, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
 		    await expect(
-		      streamManager.connect(payer).claim()
+		      	streamManager.connect(payer).claim()
 		    )
 		    .to.be.revertedWith("NotPayee")
 		})
@@ -618,7 +620,7 @@ describe.only("StreamManager:", async () => {
 		    expect(await streamManager.accumulation(payee1.address)).to.equal(expectedAmount)
 
 		    await expect(
-		      streamManager.connect(payee1).claim()
+		      	streamManager.connect(payee1).claim()
 		    )
 		    .to.emit(streamManager, "TokensClaimed")
 		    .withArgs(payee1.address, expectedAmount)
