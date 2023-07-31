@@ -13,7 +13,7 @@ describe.only("StreamManager:", async () => {
     const cliffPeriod = 24 * 3600; // 24 hrs
     const zero = ethers.constants.AddressZero 
 
-	it("Checking fixtures;", async () => {
+	it("Checking fixtures", async () => {
 	    // Returning the `decimals` for coverage*
 	    const { mockUSDT } = await loadFixture(getSignersAndDeployContracts)
 
@@ -23,7 +23,7 @@ describe.only("StreamManager:", async () => {
 	describe("changeCommissionAddress();", async () => {
 		// Tests for `changeCommissionAddress();`
 		// Expecting revert with `NotAdmin`
-		it('Chainge address fee: only the admin can call the function;', async () => {
+		it('Chainge address fee: only the admin can call the function', async () => {
 
 	    	const { payee1, payee2, 
 	    		streamManager } = await loadFixture(getSignersAndDeployContracts)
@@ -34,7 +34,7 @@ describe.only("StreamManager:", async () => {
 		  })
 
 		// Expecting revert with `InvalidAddress`
-		it('Chainge address fee: not can setting address(0) how address of the admin;', async () => {
+		it('Chainge address fee: not can setting address(0) how address of the admin', async () => {
 
 	    	const { admin, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -44,7 +44,7 @@ describe.only("StreamManager:", async () => {
 		})
 
 		// Expecting revert with `InvalidAddress`
-		it('Chainge address fee: existing address and new address must not match;', async () => {
+		it('Chainge address fee: existing address and new address must not match', async () => {
 
 	    	const { admin, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -53,7 +53,7 @@ describe.only("StreamManager:", async () => {
 			).to.be.revertedWith('InvalidAddress')
 		})
 		// Changing the address of the commission
-		it('Chainge address fee: address of the admin is changing;', async () => {
+		it('Chainge address fee: address of the admin is changing', async () => {
 	    	
 	    	const { admin, payee1, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -67,7 +67,7 @@ describe.only("StreamManager:", async () => {
 	describe("changePayerAddress();", async () => {
 		// Tests for `changePayerAddress();`
 		// Expecting revert with `NotAdmin`
-		it('Change address payer: only the admin can call the function;', async () => {
+		it('Change address payer: only the admin can call the function', async () => {
 
 	    	const { payee1, payee2, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -77,7 +77,7 @@ describe.only("StreamManager:", async () => {
 		  })
 
 		// Expecting revert with `InvalidAddress`
-		it('Change address payer: not can setting address(0) how address of the admin;', async () => {
+		it('Change address payer: not can setting address(0) how address of the admin', async () => {
 
 	    	const { admin, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -87,7 +87,7 @@ describe.only("StreamManager:", async () => {
 		})
 
 		// Expecting revert with `InvalidAddress`
-		it('Change address payer: existing address and new address must not match;', async () => {
+		it('Change address payer: existing address and new address must not match', async () => {
 
 	    	const { admin, payer, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -96,7 +96,7 @@ describe.only("StreamManager:", async () => {
 			).to.be.revertedWith('InvalidAddress')
 		})
 		// Changing the address payer
-		it('Change address payer: address of the admin is changing;', async () => {
+		it('Change address payer: address of the admin is changing', async () => {
 
 	    	const { admin, payee1, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -412,7 +412,7 @@ describe.only("StreamManager:", async () => {
 		})
 
 		// Expecting revert with `OpenStreamExists`
-		it('Creating stream: previous stream has not been ended;', async () => {
+		it('Creating stream: previous stream has not been ended', async () => {
 
 		  	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(createOpenStreamAsPayee1)
 
