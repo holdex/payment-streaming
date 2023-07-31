@@ -3,8 +3,8 @@ const { ethers } = require("hardhat");
 const { time, loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const { getSignersAndDeployContracts, createdOpenStream } = require("./fixtures");
 
-const createdOpenStraemAsPayee1 = () => createdOpenStream(0);
-const createdOpenStraemAsPayee2 = () => createdOpenStream(1);
+const createOpenStraemAsPayee1 = () => createdOpenStream(0);
+const createOpenStraemAsPayee2 = () => createdOpenStream(1);
 
 describe.only("StreamManager:", async () => {
 	const amount = 1000
@@ -197,7 +197,7 @@ describe.only("StreamManager:", async () => {
 	  	// Expect revert with `Terminating``
 		it('Terminate: stream is already terminated;', async () => {
 
-	    	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(createdOpenStraemAsPayee1)
+	    	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(createOpenStraemAsPayee1)
 
 		    await time.increase(4 * 24 * 3600); // + 4 days
 
@@ -213,7 +213,7 @@ describe.only("StreamManager:", async () => {
 		// Expecting success
 		it('Terminate: terminating succeed;', async () => {
 
-	    	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(createdOpenStraemAsPayee1)
+	    	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(createOpenStraemAsPayee1)
 
 			await expect(
 				streamManager.connect(payer).terminate(payee1.address))
@@ -224,7 +224,7 @@ describe.only("StreamManager:", async () => {
 	  	// Expecting success in the cliff period
 		it('Terminate: terminating succeed in the cliff period;', async () => {
 
-	    	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(createdOpenStraemAsPayee1)
+	    	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(createOpenStraemAsPayee1)
 
 		    await streamManager.connect(payer).terminate(payee1.address)
 		    expect(await streamManager.accumulation(payee1.address)).to.equal(0)
