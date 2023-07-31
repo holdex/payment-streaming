@@ -452,7 +452,7 @@ describe.only("StreamManager:", async () => {
 		    await maliciousToken.mint(payer.address, amount)
 		    await maliciousToken.connect(payer).approve(streamManager.address, amount)
 
-		    // Creating stream for the test reentrant call
+		    // Creating stream for the testing reentrant call
 		    await streamManager.connect(payer).createOpenStream(
 		      	payee1.address,
 		      	maliciousToken.address,
