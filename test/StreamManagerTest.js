@@ -13,7 +13,7 @@ describe.only("StreamManager:", async () => {
     const cliffPeriod = 24 * 3600; // 24 hrs
     const zero = ethers.constants.AddressZero 
 
-	it("Checking fixtures", async () => {
+	it("Checking fixtures;", async () => {
 	    // Returning the `decimals` for coverage*
 	    const { mockUSDT } = await loadFixture(getSignersAndDeployContracts)
 
@@ -23,7 +23,7 @@ describe.only("StreamManager:", async () => {
 	describe("changeCommissionAddress();", async () => {
 		// Tests for `changeCommissionAddress();`
 		// Expecting revert with `NotAdmin`
-		it('Chainge address fee: only the admin can call the function', async () => {
+		it('Chainge address fee: only the admin can call the function;', async () => {
 
 	    	const { payee1, payee2, 
 	    		streamManager } = await loadFixture(getSignersAndDeployContracts)
@@ -34,7 +34,7 @@ describe.only("StreamManager:", async () => {
 		  })
 
 		// Expecting revert with `InvalidAddress`
-		it('Chainge address fee: not can setting address(0) how address of the admin', async () => {
+		it('Chainge address fee: not can setting address(0) how address of the admin;', async () => {
 
 	    	const { admin, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -44,7 +44,7 @@ describe.only("StreamManager:", async () => {
 		})
 
 		// Expecting revert with `InvalidAddress`
-		it('Chainge address fee: existing address and new address must not match', async () => {
+		it('Chainge address fee: existing address and new address must not match;', async () => {
 
 	    	const { admin, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -53,7 +53,7 @@ describe.only("StreamManager:", async () => {
 			).to.be.revertedWith('InvalidAddress')
 		})
 		// Changing the address of the commission
-		it('Chainge address fee: address of the admin is changing', async () => {
+		it('Chainge address fee: address of the admin is changing;', async () => {
 	    	
 	    	const { admin, payee1, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -67,7 +67,7 @@ describe.only("StreamManager:", async () => {
 	describe("changePayerAddress();", async () => {
 		// Tests for `changePayerAddress();`
 		// Expecting revert with `NotAdmin`
-		it('Change address payer: only the admin can call the function', async () => {
+		it('Change address payer: only the admin can call the function;', async () => {
 
 	    	const { payee1, payee2, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -77,7 +77,7 @@ describe.only("StreamManager:", async () => {
 		  })
 
 		// Expecting revert with `InvalidAddress`
-		it('Change address payer: not can setting address(0) how address of the admin', async () => {
+		it('Change address payer: not can setting address(0) how address of the admin;', async () => {
 
 	    	const { admin, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -87,7 +87,7 @@ describe.only("StreamManager:", async () => {
 		})
 
 		// Expecting revert with `InvalidAddress`
-		it('Change address payer: existing address and new address must not match', async () => {
+		it('Change address payer: existing address and new address must not match;', async () => {
 
 	    	const { admin, payer, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -96,7 +96,7 @@ describe.only("StreamManager:", async () => {
 			).to.be.revertedWith('InvalidAddress')
 		})
 		// Changing the address payer
-		it('Change address payer: address of the admin is changing', async () => {
+		it('Change address payer: address of the admin is changing;', async () => {
 
 	    	const { admin, payee1, streamManager } = await loadFixture(getSignersAndDeployContracts)
 
@@ -412,7 +412,7 @@ describe.only("StreamManager:", async () => {
 		})
 
 		// Expecting revert with `OpenStreamExists`
-		it('Creating stream: previous stream has not been ended', async () => {
+		it('Creating stream: previous stream has not been ended;', async () => {
 
 		  	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(createOpenStreamAsPayee1)
 
@@ -444,42 +444,15 @@ describe.only("StreamManager:", async () => {
 
 	describe("claim();", async () => {
 		// Tests for `claim();`
-		// Claiming USDT
-		it('Claiming: claim succeed;', async () => {
-
-		  	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
-
-		  	// Minting tokens
-		  	await mockUSDT.mint(streamManager.address, amount)
-
-		    expect(await mockUSDT.balanceOf(streamManager.address)).to.eq(amount)
-
-		  	// Creating stream
-			await streamManager.connect(payer).createOpenStream(
-			    payee1.address,
-			    mockUSDT.address,
-			    rate,
-			    terminationPeriod,
-			    cliffPeriod
-			);
-
-		    const currentTimestamp = 2 * 24 * 3600
-		    await time.increase(currentTimestamp) // + 2 days
-		    const claimablePeriod = currentTimestamp - cliffPeriod
-		    const expectedAmount = Math.floor(claimablePeriod * rate / 30 / 24 / 3600)
-
-		    await expect(
-		      streamManager.connect(payee1).claim()
-		    )
-		    .to.emit(streamManager, "TokensClaimed")
-		    .withArgs(payee1.address, expectedAmount)
-		})
-
-		it('Claiming: should prevent reentrant calls', async () => {
+		it('Claiming: should prevent reentrant calls;', async () => {
 
 		  	const { payer, payee1, streamManager, maliciousToken } = await loadFixture(getSignersAndDeployContracts)
 
-		  	// Creating stream
+		    // Minting tokens to `payer` and approve `streamManager contract`
+		    await maliciousToken.mint(payer.address, amount)
+		    await maliciousToken.connect(payer).approve(streamManager.address, amount)
+
+		    // Creating stream for the test reentrant call
 		    await streamManager.connect(payer).createOpenStream(
 		      	payee1.address,
 		      	maliciousToken.address,
@@ -487,10 +460,6 @@ describe.only("StreamManager:", async () => {
 		      	terminationPeriod,
 		      	cliffPeriod
 		    )
-
-		    // Minting tokens to `payer` and approve `streamManager contract`
-		    await maliciousToken.mint(payer.address, amount)
-		    await maliciousToken.connect(payer).approve(streamManager.address, amount)
 
 		    await expect(
 		      	streamManager.connect(payer).deposit(
@@ -522,15 +491,7 @@ describe.only("StreamManager:", async () => {
 		// Expecting revert with `CliffPeriodIsNotEnded`
 		it('Claiming: cliff period is not ended;', async () => {
 
-			const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
-
-		    // Creating stream
-		    await streamManager.connect(payer).createOpenStream(
-		        payee1.address,
-		        mockUSDT.address,
-		        rate,
-		        terminationPeriod,
-		        cliffPeriod)
+			const { payer, payee1, streamManager, mockUSDT } = await loadFixture(createOpenStreamAsPayee1)
 
 		    await expect(streamManager.connect(payee1).claim()
 		    ).to.be.revertedWith("CliffPeriodIsNotEnded");
@@ -539,15 +500,7 @@ describe.only("StreamManager:", async () => {
 		// Expecting revert with `InsufficientBalance`
 		it('Claiming: insufficient funds;', async () => {
 
-		  	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
-
-		    // Creating stream
-		    await streamManager.connect(payer).createOpenStream(
-		        payee1.address,
-		        mockUSDT.address,
-		        rate,
-		        terminationPeriod,
-		        cliffPeriod)
+		  	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(createOpenStreamAsPayee1)
 
 		    await time.increase(17 * 24 * 3600); // + 17 days
 
@@ -556,7 +509,7 @@ describe.only("StreamManager:", async () => {
 		    ).to.be.revertedWith('InsufficientBalance')
 		})
 
-		it('Claiming: success creating next stream', async () => {
+		it('Claiming: success creating next stream;', async () => {
 
 		  	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
 
@@ -574,9 +527,31 @@ describe.only("StreamManager:", async () => {
 		    .withArgs(payer.address, payee1.address);
 		})
 
+		// Claiming USDT
+		it('Claiming: claim succeed;', async () => {
+
+		  	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(createOpenStreamAsPayee1)
+
+		  	// Minting tokens
+		  	await mockUSDT.mint(streamManager.address, amount)
+
+		    expect(await mockUSDT.balanceOf(streamManager.address)).to.eq(amount)
+
+		    const currentTimestamp = 2 * 24 * 3600
+		    await time.increase(currentTimestamp) // + 2 days
+		    const claimablePeriod = currentTimestamp - cliffPeriod
+		    const expectedAmount = Math.floor(claimablePeriod * rate / 30 / 24 / 3600)
+
+		    await expect(
+		      	streamManager.connect(payee1).claim()
+		    )
+		    .to.emit(streamManager, "TokensClaimed")
+		    .withArgs(payee1.address, expectedAmount)
+		})
+
 		it('Claiming: succeed claiming for the first payee;', async () => {
 
-		  	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
+		  	const { payer, payee1, streamManager, mockUSDT } = await loadFixture(createOpenStreamAsPayee1)
 		    const amountNew = amount * 100000
 			const currentTimestamp = 44 * 24 * 3600 // Setting timestamp
 			const claimablePeriod = currentTimestamp - cliffPeriod
@@ -584,19 +559,11 @@ describe.only("StreamManager:", async () => {
 		    await mockUSDT.mint(payer.address, amountNew)
 		    await mockUSDT.connect(payer).approve(streamManager.address, amountNew)
 		    await streamManager.connect(payer).deposit(
-		      mockUSDT.address,
-		      amountNew
+		      	mockUSDT.address,
+		      	amountNew
 		    )
 
 		    expect(await streamManager.accumulation(payee1.address)).to.equal(0) 
-
-		    // Creating stream
-		    await streamManager.connect(payer).createOpenStream(
-		        payee1.address,
-		        mockUSDT.address,
-		        rate,
-		        terminationPeriod,
-		        cliffPeriod)
 
 		    expect(await streamManager.isPayee(payee1.address)).to.eq(true)
 
@@ -626,7 +593,7 @@ describe.only("StreamManager:", async () => {
 
 		it('Claiming: succeed claiming for the second payee;', async () => {
 
-		  	const { payer, payee2, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
+		  	const { payer, payee2, streamManager, mockUSDT } = await loadFixture(createOpenStreamAsPayee2)
 		  	const amountNew = amount * 100000
 		  	const currentTimestamp = 20 * 24 * 3600 // Setting timestamp
 		  	const claimablePeriod = currentTimestamp - cliffPeriod
@@ -634,15 +601,6 @@ describe.only("StreamManager:", async () => {
 		  	await mockUSDT.mint(payer.address, amountNew);
 		  	await mockUSDT.connect(payer).approve(streamManager.address, amountNew)
 		  	await streamManager.connect(payer).deposit(mockUSDT.address, amountNew)
-
-		  	// Creating stream
-		  	await streamManager.connect(payer).createOpenStream(
-			    payee2.address,
-			    mockUSDT.address,
-		    	rate,
-		    	terminationPeriod,
-		    	cliffPeriod
-		  	);
 
 		  	expect(await streamManager.isPayee(payee2.address)).to.eq(true)
 
@@ -666,21 +624,12 @@ describe.only("StreamManager:", async () => {
 
 		it('Claiming: succeed claiming after termination for the second payee;', async () => {
 		  	
-			const { payer, payee2, streamManager, mockUSDT } = await loadFixture(getSignersAndDeployContracts)
+			const { payer, payee2, streamManager, mockUSDT } = await loadFixture(createOpenStreamAsPayee2)
 		  	const amountNew = amount * 100000
 
 		  	await mockUSDT.mint(payer.address, amountNew)
 		  	await mockUSDT.connect(payer).approve(streamManager.address, amountNew)
 		  	await streamManager.connect(payer).deposit(mockUSDT.address, amountNew)
-
-		  	// Creating stream
-		  	await streamManager.connect(payer).createOpenStream(
-			    payee2.address,
-			    mockUSDT.address,
-		    	rate,
-		    	terminationPeriod,
-		    	cliffPeriod
-		  	)
 
 		  	// Terminating the stream
 		  	streamManager.connect(payer).terminate(payee2.address)
